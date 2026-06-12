@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "features": "Fonctionnalités",
+    "howItWorks": "Comment ça marche",
+    "pricing": "Tarifs",
+    "signIn": "Se connecter",
+    "dashboard": "Tableau de bord",
+    "signOut": "Se déconnecter"
+  },
+  "hero": {
+    "headline": "Votre briefing d'intelligence IA, chaque matin",
+    "subheadline": "Gardez toujours une longueur d'avance. NeuralBrief analyse des centaines de sources chaque nuit et vous livre un résumé personnalisé sur l'IA, la tech et vos concurrents — directement dans votre boîte Gmail avant 7h du matin.",
+    "emailPlaceholder": "Saisissez votre adresse Gmail",
+    "ctaButton": "Obtenir mon briefing gratuit",
+    "successMessage": "Vous êtes inscrit ! Consultez votre boîte de réception pour confirmer.",
+    "errorMessage": "Une erreur s'est produite. Veuillez réessayer."
+  },
+  "features": {
+    "title": "Conçu pour ceux qui ne peuvent pas se permettre de manquer quoi que ce soit",
+    "subtitle": "Quatre agents intelligents travaillent toute la nuit pour que vous vous réveilliez informé, sans être submergé.",
+    "badge1": "Intelligence en temps réel",
+    "desc1": "Notre Agent Scraper surveille en temps réel des centaines de sources tech et sectorielles de confiance, capturant les informations importantes avant vos concurrents.",
+    "badge2": "Élimination du bruit",
+    "desc2": "L'Agent de Filtrage attribue un score de pertinence à chaque article et supprime les doublons, garantissant que votre digest ne contient que l'essentiel.",
+    "badge3": "Résumés par IA",
+    "desc3": "L'Agent de Résumé utilise Gemini AI pour condenser chaque actualité en deux ou trois phrases claires, vous donnant l'information clé sans avoir à cliquer.",
+    "badge4": "Livraison en boîte de réception",
+    "desc4": "L'Agent Email compile un digest parfaitement mis en forme et le livre dans votre Gmail chaque matin à 7h, personnalisé selon vos thématiques choisies."
+  },
+  "footer": {
+    "tagline": "Restez affûté. Restez en avance. Chaque matin.",
+    "rights": "© 2026 NeuralBrief. Tous droits réservés.",
+    "privacyPolicy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "contact": "Contact"
+  },
+  "profile": {
+    "title": "Votre profil",
+    "topics": "Sujets",
+    "preferences": "Préférences",
+    "bookmarks": "Favoris",
+    "save": "Enregistrer les modifications",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré !",
+    "logout": "Se déconnecter",
+    "digestFrequency": "Fréquence du digest",
+    "daily": "Quotidien",
+    "weekly": "Hebdomadaire"
+  },
+  "auth": {
+    "signInWithGoogle": "Continuer avec Google",
+    "signingIn": "Connexion en cours…",
+    "signOut": "Se déconnecter",
+    "popupBlocked": "Fenêtre contextuelle bloquée. Veuillez autoriser les pop-ups pour ce site et réessayer.",
+    "authError": "L'authentification a échoué. Veuillez réessayer.",
+    "loginRequired": "Veuillez vous connecter pour accéder à cette fonctionnalité."
+  },
+  "bookmarks": {
+    "title": "Articles sauvegardés",
+    "empty": "Aucun favori pour l'instant. Sauvegardez des articles depuis votre digest pour les retrouver ici.",
+    "remove": "Supprimer",
+    "loginRequired": "Connectez-vous pour consulter et gérer vos favoris."
+  },
+  "engine": {
+    "title": "Comment fonctionne le pipeline d'intelligence",
+    "description": "Quatre agents IA spécialisés s'exécutent en séquence chaque nuit, transformant des données web brutes en votre briefing personnalisé du matin.",
+    "step1Title": "Agent Scraper",
+    "step1Desc": "Parcourt des centaines de sources d'actualités tech, de flux RSS et de blogs d'entreprise. Extrait les titres, extraits, URLs et métadonnées pour chaque sujet que vous suivez.",
+    "step2Title": "Agent de Filtrage",
+    "step2Desc": "Utilise Gemini AI pour évaluer la pertinence de chaque article par rapport à vos sujets, supprimer les doublons et éliminer le contenu hors sujet ou de faible qualité.",
+    "step3Title": "Agent de Résumé",
+    "step3Desc": "Génère des résumés concis de deux à trois phrases pour chaque article filtré, en les classant comme breaking news, analyse, lancement de produit ou couverture générale.",
+    "step4Title": "Agent Email",
+    "step4Desc": "Compile tous les articles résumés dans un digest structuré et clair, regroupés par sujet, et les livre dans votre Gmail via l'API Gmail chaque matin à 7h UTC."
+  },
+  "faq": {
+    "title": "Questions fréquemment posées",
+    "q1": "Quelles sources NeuralBrief surveille-t-il ?",
+    "a1": "Nous suivons des centaines de sources sélectionnées, dont TechCrunch, The Verge, Wired, MIT Technology Review, des blogs d'ingénierie d'entreprise, des prépublications ArXiv sur l'IA et bien d'autres. Vous pouvez également suggérer des sources via votre profil.",
+    "q2": "Puis-je choisir les sujets de mon digest ?",
+    "a2": "Oui. Lors de l'inscription et à tout moment depuis votre profil, vous pouvez sélectionner parmi des dizaines de sujets tels que l'Intelligence Artificielle, la Cybersécurité, le SaaS, l'Infrastructure Cloud, les Startups et le Suivi Concurrentiel.",
+    "q3": "À quelle heure recevrai-je mon digest ?",
+    "a3": "Les digests sont générés et envoyés à 07h00 UTC chaque jour. Selon votre fuseau horaire et votre fournisseur de messagerie, vous devriez le recevoir en quelques minutes.",
+    "q4": "Mon adresse Gmail est-elle sécurisée ?",
+    "a4": "Nous utilisons Google OAuth2 pour l'authentification et l'API Gmail uniquement pour vous envoyer des e-mails. Nous ne stockons jamais votre mot de passe Gmail et ne lisons jamais votre boîte de réception.",
+    "q5": "Puis-je mettre en pause ou arrêter mon digest ?",
+    "a5": "Absolument. Vous pouvez modifier la fréquence de votre digest en Hebdomadaire ou Aucun à tout moment depuis les préférences de votre profil. Les modifications prennent effet le lendemain."
+  },
+  "cta": {
+    "title": "Commencez chaque matin plus intelligemment",
+    "subtitle": "Rejoignez des milliers de fondateurs, ingénieurs et analystes qui ne manquent jamais un développement important dans leur secteur.",
+    "button": "Commencer gratuitement"
+  }
+}

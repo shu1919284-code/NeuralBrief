@@ -1,0 +1,50 @@
+{
+  "entities": {
+    "Subscriber": {
+      "title": "Subscriber",
+      "description": "User who subscribed to the newsletter",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The subscriber's email address"
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "When the user subscribed (timestamp)"
+        }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "UserPreference": {
+      "title": "User Preference",
+      "description": "User subscription preferences and profile",
+      "type": "object",
+      "properties": {
+        "wantsNewsletter": {
+          "type": "boolean",
+          "description": "Whether the user wants to receive newsletters"
+        },
+        "frequency": {
+          "type": "string",
+          "description": "Frequency of digests (daily, weekly)"
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["wantsNewsletter", "frequency", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "subscribers/{subscriberId}": {
+      "schema": "Subscriber",
+      "description": "Stores newsletter subscribers."
+    },
+    "users/{userId}": {
+      "schema": "UserPreference",
+      "description": "Store user preferences."
+    }
+  }
+}

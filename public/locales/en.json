@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "features": "Features",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "signIn": "Sign In",
+    "dashboard": "Dashboard",
+    "signOut": "Sign Out"
+  },
+  "hero": {
+    "headline": "Your AI-Powered Intelligence Briefing, Every Morning",
+    "subheadline": "Stay ahead of the curve. NeuralBrief scans hundreds of sources overnight and delivers a crisp, personalized digest on AI, tech, and your competitors — straight to your inbox by 7 AM.",
+    "emailPlaceholder": "Enter your Gmail address",
+    "ctaButton": "Get My Free Briefing",
+    "successMessage": "You're on the list! Check your inbox for a confirmation.",
+    "errorMessage": "Something went wrong. Please try again."
+  },
+  "features": {
+    "title": "Built for People Who Can't Afford to Miss a Thing",
+    "subtitle": "Four intelligent agents work through the night so you wake up informed, not overwhelmed.",
+    "badge1": "Live Intelligence",
+    "desc1": "Our Scraper Agent monitors hundreds of trusted tech and industry sources in real time, capturing the stories that matter before your competitors do.",
+    "badge2": "Noise Elimination",
+    "desc2": "The Filter Agent scores every article for relevance and deduplicates overlapping coverage, so your digest contains only signal — never noise.",
+    "badge3": "AI Summaries",
+    "desc3": "The Summary Agent distills each story into two to three clear sentences using Gemini AI, giving you the key insight without the click.",
+    "badge4": "Inbox Delivery",
+    "desc4": "The Email Agent assembles a beautifully formatted digest and delivers it to your Gmail every morning at 7 AM, personalized to your chosen topics."
+  },
+  "footer": {
+    "tagline": "Stay sharp. Stay ahead. Every morning.",
+    "rights": "© 2026 NeuralBrief. All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact"
+  },
+  "profile": {
+    "title": "Your Profile",
+    "topics": "Topics",
+    "preferences": "Preferences",
+    "bookmarks": "Bookmarks",
+    "save": "Save Changes",
+    "saving": "Saving…",
+    "saved": "Saved!",
+    "logout": "Log Out",
+    "digestFrequency": "Digest Frequency",
+    "daily": "Daily",
+    "weekly": "Weekly"
+  },
+  "auth": {
+    "signInWithGoogle": "Continue with Google",
+    "signingIn": "Signing in…",
+    "signOut": "Sign Out",
+    "popupBlocked": "Pop-up blocked. Please allow pop-ups for this site and try again.",
+    "authError": "Authentication failed. Please try again.",
+    "loginRequired": "Please sign in to access this feature."
+  },
+  "bookmarks": {
+    "title": "Saved Articles",
+    "empty": "No bookmarks yet. Save articles from your digest to find them here.",
+    "remove": "Remove",
+    "loginRequired": "Sign in to view and manage your bookmarks."
+  },
+  "engine": {
+    "title": "How the Intelligence Pipeline Works",
+    "description": "Four specialized AI agents run every night in sequence, transforming raw web data into your personalized morning briefing.",
+    "step1Title": "Scraper Agent",
+    "step1Desc": "Crawls hundreds of curated tech news sources, RSS feeds, and company blogs. Extracts article titles, snippets, URLs, and metadata for every topic you follow.",
+    "step2Title": "Filter Agent",
+    "step2Desc": "Uses Gemini AI to score each article for relevance against your selected topics, removes duplicates, and discards low-quality or off-topic content.",
+    "step3Title": "Summary Agent",
+    "step3Desc": "Generates concise two-to-three sentence summaries for every filtered article, categorizing each as breaking news, analysis, a product release, or general coverage.",
+    "step4Title": "Email Agent",
+    "step4Desc": "Compiles all summarized items into a clean, structured digest grouped by topic and delivers it to your Gmail inbox via the Gmail API every morning at 7 AM UTC."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "q1": "Which sources does NeuralBrief monitor?",
+    "a1": "We track hundreds of curated sources including TechCrunch, The Verge, Wired, MIT Technology Review, official company engineering blogs, ArXiv AI preprints, and more. You can also suggest sources via your profile.",
+    "q2": "Can I choose what topics appear in my digest?",
+    "a2": "Yes. During onboarding and at any time in your profile, you can select from dozens of topics such as Artificial Intelligence, Cybersecurity, SaaS, Cloud Infrastructure, Startups, and Competitor Tracking.",
+    "q3": "What time will my digest arrive?",
+    "a3": "Digests are generated and dispatched at 07:00 UTC daily. Depending on your timezone and email provider, you should receive it within a few minutes of that time.",
+    "q4": "Is my Gmail address secure?",
+    "a4": "We use Google OAuth2 for authentication and the Gmail API only to send you emails. We never store your Gmail password and we never read your inbox.",
+    "q5": "Can I pause or stop my digest?",
+    "a5": "Absolutely. You can switch your digest frequency to Weekly or None at any time from your profile preferences. Changes take effect the next day."
+  },
+  "cta": {
+    "title": "Start Your Morning Smarter",
+    "subtitle": "Join thousands of founders, engineers, and analysts who never miss an important development in their industry.",
+    "button": "Get Started for Free"
+  }
+}

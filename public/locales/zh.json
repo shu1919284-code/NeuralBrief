@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "features": "功能特点",
+    "howItWorks": "工作原理",
+    "pricing": "价格方案",
+    "signIn": "登录",
+    "dashboard": "控制台",
+    "signOut": "退出登录"
+  },
+  "hero": {
+    "headline": "每天早晨，您专属的 AI 智能简报",
+    "subheadline": "始终掌握先机。NeuralBrief 每夜扫描数百个来源，在早上 7 点前将关于 AI、科技和竞争对手的个性化摘要直接发送到您的 Gmail 收件箱。",
+    "emailPlaceholder": "输入您的 Gmail 地址",
+    "ctaButton": "免费获取我的简报",
+    "successMessage": "您已成功加入！请查收确认邮件。",
+    "errorMessage": "出现了问题，请重试。"
+  },
+  "features": {
+    "title": "专为不能错过任何信息的人而生",
+    "subtitle": "四个智能代理整夜运行，让您醒来时信息充分，而不是应接不暇。",
+    "badge1": "实时情报",
+    "desc1": "我们的 Scraper 代理实时监控数百个可信赖的科技和行业来源，在您的竞争对手之前捕获重要动态。",
+    "badge2": "噪音过滤",
+    "desc2": "Filter 代理对每篇文章进行相关性评分并去除重复内容，确保您的简报只包含有价值的信息。",
+    "badge3": "AI 摘要",
+    "desc3": "Summary 代理利用 Gemini AI 将每条新闻精炼为两到三句清晰的文字，让您无需点击即可获取核心洞见。",
+    "badge4": "收件箱直达",
+    "desc4": "Email 代理将精美排版的简报汇总，每天早上 7 点通过 Gmail API 发送到您的 Gmail 收件箱，完全按照您选择的主题个性化定制。"
+  },
+  "footer": {
+    "tagline": "保持敏锐。保持领先。每天早晨。",
+    "rights": "© 2026 NeuralBrief. 保留所有权利。",
+    "privacyPolicy": "隐私政策",
+    "terms": "服务条款",
+    "contact": "联系我们"
+  },
+  "profile": {
+    "title": "我的资料",
+    "topics": "关注主题",
+    "preferences": "偏好设置",
+    "bookmarks": "收藏夹",
+    "save": "保存更改",
+    "saving": "保存中…",
+    "saved": "已保存！",
+    "logout": "退出登录",
+    "digestFrequency": "简报频率",
+    "daily": "每日",
+    "weekly": "每周"
+  },
+  "auth": {
+    "signInWithGoogle": "通过 Google 继续",
+    "signingIn": "登录中…",
+    "signOut": "退出登录",
+    "popupBlocked": "弹窗被拦截。请允许此网站的弹窗后重试。",
+    "authError": "身份验证失败，请重试。",
+    "loginRequired": "请登录后使用此功能。"
+  },
+  "bookmarks": {
+    "title": "已收藏的文章",
+    "empty": "暂无收藏。从您的简报中收藏文章，即可在此查看。",
+    "remove": "移除",
+    "loginRequired": "请登录以查看和管理您的收藏。"
+  },
+  "engine": {
+    "title": "智能处理流水线工作原理",
+    "description": "四个专业 AI 代理每夜按顺序运行，将原始网络数据转化为您个性化的晨间简报。",
+    "step1Title": "Scraper 代理",
+    "step1Desc": "爬取数百个科技新闻来源、RSS 订阅源和企业博客，提取您关注的每个主题的文章标题、摘录、URL 和元数据。",
+    "step2Title": "Filter 代理",
+    "step2Desc": "使用 Gemini AI 对每篇文章按照您的选定主题进行相关性评分，删除重复内容，过滤低质量或偏题内容。",
+    "step3Title": "Summary 代理",
+    "step3Desc": "为每篇筛选后的文章生成简洁的两到三句摘要，并将其分类为突发新闻、深度分析、产品发布或综合报道。",
+    "step4Title": "Email 代理",
+    "step4Desc": "将所有摘要内容按主题分组整理为清晰的简报，并通过 Gmail API 每天早上 7 点 UTC 发送到您的 Gmail 收件箱。"
+  },
+  "faq": {
+    "title": "常见问题",
+    "q1": "NeuralBrief 监控哪些来源？",
+    "a1": "我们追踪数百个精选来源，包括 TechCrunch、The Verge、Wired、MIT Technology Review、企业工程博客、ArXiv AI 预印本等。您也可以通过个人资料页面建议添加新来源。",
+    "q2": "我可以选择简报的主题吗？",
+    "a2": "可以。在注册时或随时在个人资料中，您可以从人工智能、网络安全、SaaS、云基础设施、创业公司和竞争对手追踪等数十个主题中进行选择。",
+    "q3": "简报会在什么时候到达？",
+    "a3": "简报每天 07:00 UTC 生成并发出。根据您的时区和邮件服务商，通常会在几分钟内收到。",
+    "q4": "我的 Gmail 地址安全吗？",
+    "a4": "我们使用 Google OAuth2 进行身份验证，仅通过 Gmail API 向您发送邮件。我们从不存储您的 Gmail 密码，也不会读取您的收件箱。",
+    "q5": "我可以暂停或停止简报吗？",
+    "a5": "当然可以。您可以随时在个人资料偏好设置中将简报频率更改为每周或关闭。更改将在次日生效。"
+  },
+  "cta": {
+    "title": "让每个早晨都更睿智",
+    "subtitle": "加入数千名创始人、工程师和分析师的行列，他们从不错过行业内的重要动态。",
+    "button": "免费开始使用"
+  }
+}

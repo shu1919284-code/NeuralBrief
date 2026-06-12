@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "features": "Funciones",
+    "howItWorks": "Cómo funciona",
+    "pricing": "Precios",
+    "signIn": "Iniciar sesión",
+    "dashboard": "Panel",
+    "signOut": "Cerrar sesión"
+  },
+  "hero": {
+    "headline": "Tu briefing de inteligencia con IA, cada mañana",
+    "subheadline": "Mantente siempre un paso adelante. NeuralBrief analiza cientos de fuentes durante la noche y entrega un resumen personalizado sobre IA, tecnología y tus competidores directamente en tu bandeja de entrada antes de las 7 AM.",
+    "emailPlaceholder": "Ingresa tu dirección de Gmail",
+    "ctaButton": "Obtener mi briefing gratuito",
+    "successMessage": "¡Ya estás en la lista! Revisa tu bandeja de entrada para confirmar.",
+    "errorMessage": "Algo salió mal. Por favor, inténtalo de nuevo."
+  },
+  "features": {
+    "title": "Diseñado para quienes no pueden perderse nada",
+    "subtitle": "Cuatro agentes inteligentes trabajan toda la noche para que te despiertes informado, no saturado.",
+    "badge1": "Inteligencia en tiempo real",
+    "desc1": "Nuestro Agente Scraper monitorea cientos de fuentes tecnológicas e industriales de confianza en tiempo real, capturando las noticias relevantes antes que la competencia.",
+    "badge2": "Eliminación del ruido",
+    "desc2": "El Agente de Filtrado puntúa cada artículo por relevancia y elimina los duplicados, asegurando que tu resumen contenga solo información valiosa.",
+    "badge3": "Resúmenes con IA",
+    "desc3": "El Agente de Resúmenes utiliza Gemini AI para condensar cada noticia en dos o tres oraciones claras, dándote la información clave sin necesidad de hacer clic.",
+    "badge4": "Entrega en bandeja de entrada",
+    "desc4": "El Agente de Email compila un resumen con formato impecable y lo entrega en tu Gmail cada mañana a las 7 AM, personalizado según los temas que eliges."
+  },
+  "footer": {
+    "tagline": "Mantente alerta. Mantente adelante. Cada mañana.",
+    "rights": "© 2026 NeuralBrief. Todos los derechos reservados.",
+    "privacyPolicy": "Política de privacidad",
+    "terms": "Términos de servicio",
+    "contact": "Contacto"
+  },
+  "profile": {
+    "title": "Tu perfil",
+    "topics": "Temas",
+    "preferences": "Preferencias",
+    "bookmarks": "Marcadores",
+    "save": "Guardar cambios",
+    "saving": "Guardando…",
+    "saved": "¡Guardado!",
+    "logout": "Cerrar sesión",
+    "digestFrequency": "Frecuencia del resumen",
+    "daily": "Diaria",
+    "weekly": "Semanal"
+  },
+  "auth": {
+    "signInWithGoogle": "Continuar con Google",
+    "signingIn": "Iniciando sesión…",
+    "signOut": "Cerrar sesión",
+    "popupBlocked": "Ventana emergente bloqueada. Permite las ventanas emergentes para este sitio e inténtalo de nuevo.",
+    "authError": "La autenticación falló. Por favor, inténtalo de nuevo.",
+    "loginRequired": "Por favor, inicia sesión para acceder a esta función."
+  },
+  "bookmarks": {
+    "title": "Artículos guardados",
+    "empty": "Aún no tienes marcadores. Guarda artículos de tu resumen para encontrarlos aquí.",
+    "remove": "Eliminar",
+    "loginRequired": "Inicia sesión para ver y gestionar tus marcadores."
+  },
+  "engine": {
+    "title": "Cómo funciona la pipeline de inteligencia",
+    "description": "Cuatro agentes de IA especializados se ejecutan en secuencia cada noche, transformando datos brutos de la web en tu briefing personalizado de la mañana.",
+    "step1Title": "Agente Scraper",
+    "step1Desc": "Rastrea cientos de fuentes tecnológicas, feeds RSS y blogs corporativos. Extrae títulos, fragmentos, URLs y metadatos de cada tema que sigues.",
+    "step2Title": "Agente de Filtrado",
+    "step2Desc": "Usa Gemini AI para puntuar cada artículo según su relevancia con tus temas, eliminar duplicados y descartar contenido de baja calidad.",
+    "step3Title": "Agente de Resúmenes",
+    "step3Desc": "Genera resúmenes concisos de dos a tres oraciones para cada artículo filtrado, clasificándolos como noticias de última hora, análisis, lanzamientos o cobertura general.",
+    "step4Title": "Agente de Email",
+    "step4Desc": "Compila todos los artículos resumidos en un resumen estructurado, agrupados por tema, y los entrega en tu Gmail mediante la API de Gmail cada mañana a las 7 AM UTC."
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "q1": "¿Qué fuentes monitorea NeuralBrief?",
+    "a1": "Rastreamos cientos de fuentes seleccionadas, incluyendo TechCrunch, The Verge, Wired, MIT Technology Review, blogs de ingeniería corporativos, preprints de ArXiv sobre IA y muchas más. También puedes sugerir fuentes desde tu perfil.",
+    "q2": "¿Puedo elegir los temas de mi resumen?",
+    "a2": "Sí. Durante la incorporación y en cualquier momento desde tu perfil, puedes seleccionar entre docenas de temas como Inteligencia Artificial, Ciberseguridad, SaaS, Infraestructura Cloud, Startups y Seguimiento de Competidores.",
+    "q3": "¿A qué hora llegará mi resumen?",
+    "a3": "Los resúmenes se generan y envían a las 07:00 UTC todos los días. Según tu zona horaria y proveedor de email, deberías recibirlo en pocos minutos.",
+    "q4": "¿Mi dirección de Gmail está segura?",
+    "a4": "Usamos Google OAuth2 para la autenticación y la API de Gmail únicamente para enviarte correos. Nunca almacenamos tu contraseña de Gmail ni leemos tu bandeja de entrada.",
+    "q5": "¿Puedo pausar o cancelar mi resumen?",
+    "a5": "Por supuesto. Puedes cambiar la frecuencia del resumen a Semanal o Ninguna en cualquier momento desde las preferencias de tu perfil. Los cambios se aplican a partir del día siguiente."
+  },
+  "cta": {
+    "title": "Empieza cada mañana con más inteligencia",
+    "subtitle": "Únete a miles de fundadores, ingenieros y analistas que nunca se pierden un desarrollo importante en su sector.",
+    "button": "Comenzar gratis"
+  }
+}

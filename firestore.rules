@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function isValidSubscriber(data) {
+      return data.keys().hasAll(['email', 'createdAt']) && 
+             data.keys().size() == 2 &&
+             data.email is string && data.email.size() <= 256 && data.email.matches('^[^@]+@[^@]+\\.[^@]+$') &&
+             data.createdAt == request.time;
+    }
+    
+    function isValidPreference(data) {
+      return (!data.keys().hasAny(['wantsNewsletter']) || data.wantsNewsletter is bool) &&
+             (!data.keys().hasAny(['frequency']) || data.frequency in ['daily', 'weekly', 'none']) &&
+             (!data.keys().hasAny(['bookmarks']) || data.bookmarks is list);
+    }
+
+    // Subscribers
+    match /subscribers/{subscriberId} {
+      allow create: if isValidId(subscriberId) && isValidSubscriber(incoming());
+      // Only admins should be able to read/manage subscribers in a real app.
+      // Assuming an admin might use Firebase Console manually, or we can add an admin rule later.
+    }
+    
+    // Users
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId && isValidPreference(incoming());
+    }
+  }
+}

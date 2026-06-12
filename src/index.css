@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-surface: var(--curr-surface);
+  --color-surface-dim: var(--curr-surface-dim);
+  --color-surface-bright: var(--curr-surface-bright);
+  --color-surface-container: var(--curr-surface-container);
+  --color-surface-lowest: var(--curr-surface-lowest);
+  
+  --color-primary: var(--curr-primary);
+  --color-text-main: var(--curr-text-main);
+  --color-text-muted: var(--curr-text-muted);
+  --color-border-subtle: var(--curr-border-subtle);
+
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Playfair Display', serif;
+  --font-mono: 'Inter', sans-serif;
+  --font-poiret: 'Inter', sans-serif;
+}
+
+:root {
+  --curr-surface: #F5F2ED;
+  --curr-surface-dim: #E0DDD7;
+  --curr-surface-bright: #FFFFFF;
+  --curr-surface-container: #F5F2ED;
+  --curr-surface-lowest: #F5F2ED;
+  
+  --curr-primary: #5A5A40;
+  --curr-text-main: #1A1A1A;
+  --curr-text-muted: rgba(26, 26, 26, 0.7);
+  --curr-border-subtle: rgba(26, 26, 26, 0.1);
+}
+
+.dark {
+  --curr-surface: #0a0a0a;
+  --curr-surface-dim: #171717;
+  --curr-surface-bright: #262626;
+  --curr-surface-container: #0a0a0a;
+  --curr-surface-lowest: #0a0a0a;
+  
+  --curr-primary: #8a8a60;
+  --curr-text-main: #f5f5f5;
+  --curr-text-muted: rgba(245, 245, 245, 0.6);
+  --curr-border-subtle: rgba(245, 245, 245, 0.15);
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.gradient-text {
+  background: none;
+  color: var(--color-text-main);
+  font-style: italic;
+  font-weight: 400;
+  -webkit-text-fill-color: initial;
+}
+
+.sync-dot-live {
+  width: 5px;
+  height: 5px;
+  background: var(--color-text-main);
+  border-radius: 0;
+  display: inline-block;
+  margin-right: 6px;
+  opacity: 0.5;
+}
+
+.badge-status-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-text-main);
+  border-radius: 0;
+}

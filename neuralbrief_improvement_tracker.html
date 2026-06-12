@@ -1,0 +1,257 @@
+
+<h2 class="sr-only">NeuralBrief improvement tracker — 11 actionable improvements organized as quick wins, code quality fixes, and a 4-phase production roadmap</h2>
+
+<div style="padding: 1rem 0 0;">
+
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem;">
+    <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem;">
+      <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 4px;">Total improvements</p>
+      <p style="font-size: 24px; font-weight: 500; margin: 0; color: var(--color-text-primary);">11</p>
+    </div>
+    <div style="background: var(--color-background-success); border-radius: var(--border-radius-md); padding: 1rem;">
+      <p style="font-size: 13px; color: var(--color-text-success); margin: 0 0 4px;">Quick wins</p>
+      <p style="font-size: 24px; font-weight: 500; margin: 0; color: var(--color-text-success);">3</p>
+    </div>
+    <div style="background: var(--color-background-info); border-radius: var(--border-radius-md); padding: 1rem;">
+      <p style="font-size: 13px; color: var(--color-text-info); margin: 0 0 4px;">Launch phases</p>
+      <p style="font-size: 24px; font-weight: 500; margin: 0; color: var(--color-text-info);">4</p>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+    <button id="btn-quick" onclick="setTab('quick')" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer;">
+      <i class="ti ti-bolt" aria-hidden="true" style="font-size: 14px;"></i> Quick wins <span style="opacity:0.6;">(3)</span>
+    </button>
+    <button id="btn-code" onclick="setTab('code')" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer;">
+      <i class="ti ti-code" aria-hidden="true" style="font-size: 14px;"></i> Code quality <span style="opacity:0.6;">(4)</span>
+    </button>
+    <button id="btn-roadmap" onclick="setTab('roadmap')" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer;">
+      <i class="ti ti-map-2" aria-hidden="true" style="font-size: 14px;"></i> Full roadmap <span style="opacity:0.6;">(4 phases)</span>
+    </button>
+  </div>
+  <p id="tab-hint" style="font-size: 12px; color: var(--color-text-tertiary); margin: 0 0 1rem;">Start here — 3 fixes, under 2 hours total</p>
+
+  <div id="sec-quick">
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: flex-start; gap: 12px; justify-content: space-between;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; min-width: 0;">
+          <i class="ti ti-file-code" aria-hidden="true" style="font-size: 18px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 2px;"></i>
+          <div style="min-width: 0;">
+            <p style="font-weight: 500; font-size: 14px; margin: 0 0 4px; color: var(--color-text-primary);">index.html</p>
+            <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">Update <code style="font-family: var(--font-mono); font-size: 12px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 3px;">&lt;title&gt;</code> from the placeholder, add a favicon, and write OpenGraph + Twitter card meta tags for proper sharing previews</p>
+            <button onclick="sendPrompt('Write the complete <head> section for NeuralBrief\'s index.html — proper title, favicon link, OpenGraph, and Twitter card meta tags for SEO')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Write it for me ↗</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
+          <span style="background: var(--color-background-success); color: var(--color-text-success); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap;">Quick win</span>
+          <span style="font-size: 11px; color: var(--color-text-tertiary); white-space: nowrap;">~20 min</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: flex-start; gap: 12px; justify-content: space-between;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; min-width: 0;">
+          <i class="ti ti-shield-lock" aria-hidden="true" style="font-size: 18px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 2px;"></i>
+          <div style="min-width: 0;">
+            <p style="font-weight: 500; font-size: 14px; margin: 0 0 4px; color: var(--color-text-primary);">AuthContext.tsx</p>
+            <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">Add an error state for when Chrome/Safari blocks the Google sign-in popup — currently it fails silently; user should see a clear fallback message</p>
+            <button onclick="sendPrompt('Write AuthContext.tsx for NeuralBrief with popup-blocked error handling — detect when the Google sign-in popup is blocked and show a user-friendly banner')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Write it for me ↗</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
+          <span style="background: var(--color-background-success); color: var(--color-text-success); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap;">Quick win</span>
+          <span style="font-size: 11px; color: var(--color-text-tertiary); white-space: nowrap;">~45 min</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: flex-start; gap: 12px; justify-content: space-between;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; min-width: 0;">
+          <i class="ti ti-mail-check" aria-hidden="true" style="font-size: 18px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 2px;"></i>
+          <div style="min-width: 0;">
+            <p style="font-weight: 500; font-size: 14px; margin: 0 0 4px; color: var(--color-text-primary);">Hero.tsx + Footer.tsx</p>
+            <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">Use the SHA-256 hash of the email as the Firestore document ID — prevents the same email from being saved multiple times as separate documents</p>
+            <button onclick="sendPrompt('Write the email subscription handler for NeuralBrief\'s Hero.tsx and Footer.tsx that computes a SHA-256 hash of the email and uses it as the Firestore document ID to prevent duplicates')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Write it for me ↗</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
+          <span style="background: var(--color-background-success); color: var(--color-text-success); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap;">Quick win</span>
+          <span style="font-size: 11px; color: var(--color-text-tertiary); white-space: nowrap;">~1–2 hrs</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="sec-code">
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: flex-start; gap: 12px; justify-content: space-between;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; min-width: 0;">
+          <i class="ti ti-language" aria-hidden="true" style="font-size: 18px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 2px;"></i>
+          <div style="min-width: 0;">
+            <p style="font-weight: 500; font-size: 14px; margin: 0 0 4px; color: var(--color-text-primary);">LanguageContext.tsx</p>
+            <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">Move the hardcoded translation dictionary to per-locale JSON files in <code style="font-family: var(--font-mono); font-size: 12px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 3px;">/public/locales/</code> — load dynamically with i18next so unused languages don't bloat the initial bundle</p>
+            <button onclick="sendPrompt('Migrate NeuralBrief\'s LanguageContext.tsx hardcoded translations to /public/locales/ JSON files — show me the i18next setup and how to load them dynamically')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Show me how ↗</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
+          <span style="background: var(--color-background-warning); color: var(--color-text-warning); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap;">Medium</span>
+          <span style="font-size: 11px; color: var(--color-text-tertiary); white-space: nowrap;">~2–3 hrs</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: flex-start; gap: 12px; justify-content: space-between;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; min-width: 0;">
+          <i class="ti ti-bookmark" aria-hidden="true" style="font-size: 18px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 2px;"></i>
+          <div style="min-width: 0;">
+            <p style="font-weight: 500; font-size: 14px; margin: 0 0 4px; color: var(--color-text-primary);">BookmarkContext.tsx</p>
+            <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">Rapid bookmark toggling fires concurrent Firestore writes — add debounce to prevent race conditions; also show a "sign in to bookmark" prompt instead of silently failing for logged-out users</p>
+            <button onclick="sendPrompt('Refactor NeuralBrief\'s BookmarkContext.tsx: add debounced Firestore writes to prevent race conditions on rapid toggles, and add a sign-in prompt for unauthenticated users')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Refactor it ↗</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
+          <span style="background: var(--color-background-warning); color: var(--color-text-warning); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap;">Medium</span>
+          <span style="font-size: 11px; color: var(--color-text-tertiary); white-space: nowrap;">~2 hrs</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: flex-start; gap: 12px; justify-content: space-between;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; min-width: 0;">
+          <i class="ti ti-layout-columns" aria-hidden="true" style="font-size: 18px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 2px;"></i>
+          <div style="min-width: 0;">
+            <p style="font-weight: 500; font-size: 14px; margin: 0 0 4px; color: var(--color-text-primary);">ProfileModal.tsx</p>
+            <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">345-line file doing too much — split into <code style="font-family: var(--font-mono); font-size: 12px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 3px;">TopicsTab</code>, <code style="font-family: var(--font-mono); font-size: 12px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 3px;">PreferencesTab</code>, and <code style="font-family: var(--font-mono); font-size: 12px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 3px;">BookmarksTab</code>; also move TOPICS English strings into the i18n dictionary</p>
+            <button onclick="sendPrompt('Help me split NeuralBrief\'s ProfileModal.tsx into three focused sub-components: TopicsTab.tsx, PreferencesTab.tsx, and BookmarksTab.tsx — show the folder structure and how to wire them back to the parent modal')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Split it ↗</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
+          <span style="background: var(--color-background-warning); color: var(--color-text-warning); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap;">Medium</span>
+          <span style="font-size: 11px; color: var(--color-text-tertiary); white-space: nowrap;">~3 hrs</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: flex-start; gap: 12px; justify-content: space-between;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; min-width: 0;">
+          <i class="ti ti-chart-bar" aria-hidden="true" style="font-size: 18px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 2px;"></i>
+          <div style="min-width: 0;">
+            <p style="font-weight: 500; font-size: 14px; margin: 0 0 4px; color: var(--color-text-primary);">DevDashboard.tsx</p>
+            <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">D3 chart uses a hardcoded container size — add a ResizeObserver so it redraws on window resize; replace mock data with real Firestore analytics when the signed-in user has admin role</p>
+            <button onclick="sendPrompt('Improve NeuralBrief\'s DevDashboard.tsx: add ResizeObserver for responsive D3 chart resizing, and replace mock data with real Firestore engagement analytics for admin users')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Improve it ↗</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;">
+          <span style="background: var(--color-background-warning); color: var(--color-text-warning); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap;">Medium</span>
+          <span style="font-size: 11px; color: var(--color-text-tertiary); white-space: nowrap;">~3–4 hrs</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="sec-roadmap">
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-background-info); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--color-text-info); flex-shrink: 0;">1</div>
+        <p style="font-weight: 500; font-size: 14px; margin: 0; flex: 1; color: var(--color-text-primary);">Backend engine</p>
+        <span style="background: var(--color-background-danger); color: var(--color-text-danger); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap; flex-shrink: 0;">High effort</span>
+      </div>
+      <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">Build the Express server, ArXiv RSS + GitHub trending aggregators, and the Gemini 2.5 synthesis pipeline that generates personalized daily digests based on user topic preferences</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">Express + TypeScript</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">Gemini 2.5 Flash</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">ArXiv RSS API</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">GitHub trending API</span>
+      </div>
+      <button onclick="sendPrompt('Help me build the NeuralBrief backend: server.ts skeleton with Express, an ArXiv RSS feed aggregator, a GitHub trending scraper, and the Gemini 2.5 Flash synthesis pipeline')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Start building ↗</button>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-background-info); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--color-text-info); flex-shrink: 0;">2</div>
+        <p style="font-weight: 500; font-size: 14px; margin: 0; flex: 1; color: var(--color-text-primary);">Delivery layer</p>
+        <span style="background: var(--color-background-warning); color: var(--color-text-warning); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap; flex-shrink: 0;">Medium effort</span>
+      </div>
+      <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">Integrate email dispatch via Resend or SendGrid using React Email templates, and build a Telegram bot with telegraf that pings users who saved their handle in ProfileModal</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">Resend / SendGrid</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">React Email</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">telegraf</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">Telegram Bot API</span>
+      </div>
+      <button onclick="sendPrompt('Set up the NeuralBrief delivery layer: Resend email dispatch with a React Email template, and a Telegram bot using telegraf that fetches Telegram handles from Firestore and sends digest summaries')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Set it up ↗</button>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-background-info); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--color-text-info); flex-shrink: 0;">3</div>
+        <p style="font-weight: 500; font-size: 14px; margin: 0; flex: 1; color: var(--color-text-primary);">Infrastructure hardening</p>
+        <span style="background: var(--color-background-success); color: var(--color-text-success); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap; flex-shrink: 0;">Low effort</span>
+      </div>
+      <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">Create Firestore composite indexes for complex queries, audit that all API keys live in server-side env vars (never exposed to client bundles), and add an admin analytics collection in Firestore</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">Firestore indexes</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">Env var audit</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">GCP Secret Manager</span>
+      </div>
+      <button onclick="sendPrompt('Write the Firestore index rules for NeuralBrief and a production env var security checklist — which keys go server-side only, which are safe to expose client-side')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Prepare infra ↗</button>
+    </div>
+
+    <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-background-info); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--color-text-info); flex-shrink: 0;">4</div>
+        <p style="font-weight: 500; font-size: 14px; margin: 0; flex: 1; color: var(--color-text-primary);">Production deployment</p>
+        <span style="background: var(--color-background-warning); color: var(--color-text-warning); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); white-space: nowrap; flex-shrink: 0;">Medium effort</span>
+      </div>
+      <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px;">Deploy frontend to Firebase Hosting with SPA fallback routing, backend to Cloud Run for serverless scaling, and schedule the daily digest synthesis at 07:00 UTC via Cloud Scheduler</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">Firebase Hosting</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">Cloud Run</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">Cloud Scheduler</span>
+        <span style="background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md);">CI/CD via GitHub Actions</span>
+      </div>
+      <button onclick="sendPrompt('Walk me through deploying NeuralBrief to production step by step: Firebase Hosting for the Vite frontend, Cloud Run for the Express backend, and Cloud Scheduler for the daily digest cron at 07:00 UTC')" style="font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">Deploy it ↗</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const hints = {
+  quick: 'Start here — 3 fixes, under 2 hours total',
+  code: 'Refactor work — cleaner codebase, fewer bugs in production',
+  roadmap: 'Phase 1 is the core engine — everything else builds on it'
+};
+function setTab(active) {
+  ['quick','code','roadmap'].forEach(function(t) {
+    var sec = document.getElementById('sec-' + t);
+    var btn = document.getElementById('btn-' + t);
+    var isActive = t === active;
+    sec.style.display = isActive ? 'block' : 'none';
+    if (isActive) {
+      btn.style.background = 'var(--color-background-secondary)';
+      btn.style.borderColor = 'var(--color-border-primary)';
+      btn.style.color = 'var(--color-text-primary)';
+      btn.style.fontWeight = '500';
+    } else {
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = 'var(--color-text-secondary)';
+      btn.style.fontWeight = '400';
+    }
+  });
+  document.getElementById('tab-hint').textContent = hints[active];
+}
+setTab('quick');
+</script>

@@ -1,0 +1,6 @@
+{
+  "name": "NeuralBrief",
+  "description": "Premium AI Intelligence platform mimicking the NeuralBrief landing page, with custom styling and animations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
