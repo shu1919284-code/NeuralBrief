@@ -18,9 +18,22 @@ import cronRouter from './cron';
 
 // ─── Firebase Admin Initialisation ───────────────────────────────────────────
 
-admin.initializeApp({
-  projectId: process.env['FIREBASE_PROJECT_ID'],
-});
+const privateKey = process.env['FIREBASE_PRIVATE_KEY'];
+const clientEmail = process.env['FIREBASE_CLIENT_EMAIL'];
+
+if (privateKey && clientEmail) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env['FIREBASE_PROJECT_ID'],
+      clientEmail: clientEmail,
+      privateKey: privateKey.replace(/\\n/g, '\n'),
+    }),
+  });
+} else {
+  admin.initializeApp({
+    projectId: process.env['FIREBASE_PROJECT_ID'],
+  });
+}
 
 // ─── App Setup ────────────────────────────────────────────────────────────────
 
