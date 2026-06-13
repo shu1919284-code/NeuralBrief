@@ -39,8 +39,8 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        setWantsNewsletter(data.wantsNewsletter ?? false);
-        setFrequency(data.frequency ?? 'daily');
+        setWantsNewsletter(data.wantsNewsletter ?? (data.digestFrequency !== 'none'));
+        setFrequency(data.frequency ?? data.digestFrequency ?? 'daily');
         setSelectedTopics(data.topics ?? []);
         setTelegramUsername(data.telegramUsername ?? '');
         setTopicsLastChanged(data.topicsLastChanged ?? null);
@@ -80,9 +80,11 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     try {
       const docRef = doc(db, 'users', user.uid);
       const topicsChanged = canChangeTopics();
+      const digestFreq = wantsNewsletter ? frequency : 'none';
       await setDoc(docRef, {
         wantsNewsletter,
         frequency,
+        digestFrequency: digestFreq,
         topics: selectedTopics,
         telegramUsername: telegramUsername.replace('@', '').trim(),
         topicsLastChanged: topicsChanged ? Date.now() : topicsLastChanged,
