@@ -12,6 +12,7 @@
   "type": "module",
   "dependencies": {
     "@google/genai": "^2.8.0",
+    "@google/generative-ai": "^0.24.1",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.0.8",
     "axios": "^1.17.0",

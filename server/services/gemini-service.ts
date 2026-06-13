@@ -1,12 +1,8 @@
-import {
-  GoogleGenerativeAI,
-  HarmCategory,
-  HarmBlockThreshold,
-  type GenerativeModel,
-} from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import type { GenerativeModel } from '@google/generative-ai';
 
 import { logger } from '../utils/logger.js';
-import { AppError } from '../utils/errors.js';
+import { AppError } from '../utils/errors';
 import {
   buildSingleSummaryPrompt,
   buildBatchSummaryPrompt,
@@ -71,12 +67,6 @@ class GeminiService {
 
     this.model = client.getGenerativeModel({
       model: 'gemini-2.0-flash-exp',
-      safetySettings: [
-        {
-          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-      ],
     });
 
     logger.info('GeminiService initialized');
@@ -89,7 +79,6 @@ class GeminiService {
   private async withRateLimit<T>(fn: () => Promise<T>): Promise<T> {
     const now = Date.now();
 
-    // Purge timestamps older than the window
     this.requestTimestamps = this.requestTimestamps.filter(
       (ts) => now - ts < RATE_LIMIT_WINDOW_MS,
     );
@@ -131,7 +120,6 @@ class GeminiService {
       const result = await this.withRateLimit(() => this.model.generateContent(prompt));
       responseText = result.response.text().trim();
 
-      // Strip accidental markdown code fences
       const cleaned = responseText
         .replace(/^```(?:json)?\s*/i, '')
         .replace(/\s*```$/i, '')
@@ -147,7 +135,6 @@ class GeminiService {
           `Falling back to individual summarize calls.`,
       );
 
-      // Fallback: summarize each article individually
       const items: SummarizedItem[] = await Promise.all(
         articles.map(async (article) => {
           const summary = await this.summarize(article);
