@@ -36,18 +36,22 @@ class AppError extends Error {
   }
 }
 
-validateEnvVars();
-
-const oauth2Client = new google.auth.OAuth2(
-  process.env['GMAIL_CLIENT_ID'],
-  process.env['GMAIL_CLIENT_SECRET'],
-);
-
-oauth2Client.setCredentials({
-  refresh_token: process.env['GMAIL_REFRESH_TOKEN'],
-});
-
-const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+/**
+ * Creates and returns a fully configured OAuth2 client.
+ * Validates required env vars on every call so missing config is caught at send time,
+ * not at module load time — allowing the server to start without Gmail credentials.
+ */
+function getOAuth2Client(): InstanceType<typeof google.auth.OAuth2> {
+  validateEnvVars();
+  const client = new google.auth.OAuth2(
+    process.env['GMAIL_CLIENT_ID'],
+    process.env['GMAIL_CLIENT_SECRET'],
+  );
+  client.setCredentials({
+    refresh_token: process.env['GMAIL_REFRESH_TOKEN'],
+  });
+  return client;
+}
 
 /**
  * Encodes a plain string to base64url format as required by the Gmail API.
@@ -131,6 +135,8 @@ export async function sendDigestEmail(
 
   await throttle();
 
+  const oauth2Client = getOAuth2Client();
+  const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
   const raw = buildRawMessage(to, subject, htmlContent);
   let lastError = '';
 
