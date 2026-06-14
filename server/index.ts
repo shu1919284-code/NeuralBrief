@@ -8,7 +8,7 @@ import path from 'path';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import { initializeApp } from 'firebase-admin/app';
+import { initializeApp, cert } from 'firebase-admin/app';
 
 import { logger, requestLogger } from './utils/logger';
 import { AppError, errorResponse, successResponse } from './types';
@@ -19,7 +19,11 @@ import cronRouter from './cron';
 // ─── Firebase Admin Initialisation ───────────────────────────────────────────
 
 initializeApp({
-  projectId: process.env['FIREBASE_PROJECT_ID'],
+  credential: cert({
+    projectId: process.env['FIREBASE_PROJECT_ID'],
+    clientEmail: process.env['FIREBASE_CLIENT_EMAIL'],
+    privateKey: process.env['FIREBASE_PRIVATE_KEY']?.replace(/\\n/g, '\n'),
+  }),
 });
 
 // ─── App Setup ────────────────────────────────────────────────────────────────
@@ -90,7 +94,7 @@ const server = app.listen(PORT, () => {
   logger.info('NeuralBrief server started', { port: PORT, env: process.env['NODE_ENV'] ?? 'development' });
 });
 
-// ─── Graceful Shutdown (Cloud Run SIGTERM) ────────────────────────────────────
+// ─── Graceful Shutdown ────────────────────────────────────────────────────────
 
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received — shutting down gracefully');
