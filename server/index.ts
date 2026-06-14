@@ -8,7 +8,7 @@ import path from 'path';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import { initializeApp, cert } from 'firebase-admin';
+import { initializeApp } from 'firebase-admin/app';
 
 import { logger, requestLogger } from './utils/logger';
 import { AppError, errorResponse, successResponse } from './types';
@@ -18,30 +18,9 @@ import cronRouter from './cron';
 
 // ─── Firebase Admin Initialisation ───────────────────────────────────────────
 
-const privateKey = process.env['FIREBASE_PRIVATE_KEY'];
-const clientEmail = process.env['FIREBASE_CLIENT_EMAIL'];
-const projectId = process.env['FIREBASE_PROJECT_ID'];
-
-if (privateKey && clientEmail) {
-  if (!projectId) {
-    logger.error('Firebase initialization warning: FIREBASE_PROJECT_ID is missing from environment variables.');
-  }
-  initializeApp({
-    credential: cert({
-      projectId: projectId,
-      clientEmail: clientEmail,
-      privateKey: privateKey.replace(/\\n/g, '\n'),
-      // Also provide snake_case keys to satisfy internal Firebase Admin validation checks
-      project_id: projectId,
-      client_email: clientEmail,
-      private_key: privateKey.replace(/\\n/g, '\n'),
-    } as any),
-  });
-} else {
-  initializeApp({
-    projectId: projectId,
-  });
-}
+initializeApp({
+  projectId: process.env['FIREBASE_PROJECT_ID'],
+});
 
 // ─── App Setup ────────────────────────────────────────────────────────────────
 
