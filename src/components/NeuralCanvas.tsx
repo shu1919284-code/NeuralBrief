@@ -51,9 +51,12 @@ export function NeuralCanvas(): React.JSX.Element {
     const nodeMats: THREE.MeshBasicMaterial[] = [];
     const nodes: NodeData[] = [];
 
+    const isDarkInit = document.documentElement.classList.contains('dark');
+    const initColor = isDarkInit ? 0xf5f5f5 : 0x1a1a1a;
+
     for (let i = 0; i < NODE_COUNT; i++) {
       const mat = new THREE.MeshBasicMaterial({
-        color: 0x1a1a1a,
+        color: initColor,
         transparent: true,
         opacity: 0.45 + Math.random() * 0.25,
       });
@@ -87,9 +90,9 @@ export function NeuralCanvas(): React.JSX.Element {
     lineGeo.setDrawRange(0, 0);
 
     const lineMat = new THREE.LineBasicMaterial({
-      color: 0x1a1a1a,
+      color: initColor,
       transparent: true,
-      opacity: 0.07,
+      opacity: isDarkInit ? 0.04 : 0.07,
     });
     scene.add(new THREE.LineSegments(lineGeo, lineMat));
 
@@ -119,6 +122,20 @@ export function NeuralCanvas(): React.JSX.Element {
       rafId = requestAnimationFrame(tick);
 
       if (!reduced) {
+        // Dynamic theme adaptation for WebGL colors
+        const isDark = document.documentElement.classList.contains('dark');
+        const currentColor = isDark ? 0xf5f5f5 : 0x1a1a1a;
+        
+        nodeMats.forEach((m) => {
+          if (m.color.getHex() !== currentColor) {
+            m.color.setHex(currentColor);
+          }
+        });
+        if (lineMat.color.getHex() !== currentColor) {
+          lineMat.color.setHex(currentColor);
+          lineMat.opacity = isDark ? 0.04 : 0.07;
+        }
+
         // Drift nodes, bounce off invisible walls
         nodes.forEach(({ mesh, vel }) => {
           mesh.position.add(vel);
