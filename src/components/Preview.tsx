@@ -1,17 +1,25 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'motion/react';
+import React, { useRef, useState } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+import { X } from 'lucide-react';
 import { TiltCard } from './TiltCard';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export function Preview() {
   const { t } = useLanguage();
+  const [showDoc, setShowDoc] = useState(false);
   const ref = useRef<HTMLElement>(null);
+  
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"]
   });
 
   const y1 = useTransform(scrollYProgress, [0, 1], [50, -50]);
+
+  const handleOpenDoc = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowDoc(true);
+  };
 
   return (
     <section ref={ref} className="py-32 px-6 md:px-16 max-w-7xl mx-auto" id="preview">
@@ -69,7 +77,10 @@ export function Preview() {
               <span className="text-[10px] uppercase tracking-widest font-bold text-text-muted block mb-4">
                 01 / Core Model Analytics
               </span>
-              <div className="bg-surface-dim p-8 hover:bg-surface-dim/80 active:bg-surface-dim/50 active:scale-[0.99] transition-all cursor-pointer border border-transparent hover:border-border-subtle group">
+              <div 
+                onClick={handleOpenDoc}
+                className="bg-surface-dim p-8 hover:bg-surface-dim/80 active:bg-surface-dim/50 active:scale-[0.99] transition-all cursor-pointer border border-transparent hover:border-border-subtle group"
+              >
                 <h5 className="font-heading text-2xl mb-4 group-hover:italic transition-all">Open-weights frontier framework performs 4x faster on local runtimes</h5>
                 <p className="text-sm text-text-main/70 mb-8 leading-relaxed max-w-2xl">
                   Architectural breakdown demonstrates parallel orchestration improvements, minimizing token generation overhead for processing complex structural reasoning dependencies.
@@ -80,7 +91,13 @@ export function Preview() {
                     <span className="text-text-muted">llama-3-fp8</span>
                     <span className="text-text-muted">Conf: 0.982</span>
                   </div>
-                  <a href="#" className="font-heading italic hover:opacity-50 active:scale-95 transition-all text-xs">Read Full Doc</a>
+                  <a 
+                    href="#" 
+                    onClick={handleOpenDoc}
+                    className="font-heading italic hover:opacity-50 active:scale-95 transition-all text-xs"
+                  >
+                    Read Full Doc
+                  </a>
                 </div>
               </div>
             </div>
@@ -89,6 +106,97 @@ export function Preview() {
 
         <motion.div style={{ y: useTransform(scrollYProgress, [0, 1], [-30, 30]) }} className="absolute -right-8 -bottom-8 z-0 w-40 h-40 bg-text-main rounded-full mix-blend-multiply opacity-[0.03] blur-2xl" />
       </motion.div>
+
+      {/* ── Simulated Full Document Reader Modal ───────────────────────────── */}
+      <AnimatePresence>
+        {showDoc && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] bg-surface/90 backdrop-blur-md flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 30, opacity: 0 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-surface border border-border-subtle rounded-xl p-8 md:p-10 w-full max-w-3xl relative max-h-[85vh] overflow-y-auto shadow-2xl"
+            >
+              <button
+                onClick={() => setShowDoc(false)}
+                className="absolute top-6 right-6 text-text-muted hover:text-text-main transition-colors cursor-pointer"
+                aria-label="Close document reader"
+              >
+                <X size={24} />
+              </button>
+
+              <span className="text-[10px] uppercase tracking-[0.25em] font-mono text-text-muted font-bold block mb-4 border-b border-border-subtle pb-2">
+                NeuralBrief Briefing Reader / Technical Report
+              </span>
+
+              <h2 className="font-heading text-3xl md:text-4xl mb-6 leading-tight">
+                Open-weights frontier framework performs 4x faster on local runtimes
+              </h2>
+
+              <div className="flex flex-wrap items-center gap-6 text-[10px] uppercase tracking-widest font-bold text-text-muted mb-8 border-b border-border-subtle pb-4">
+                <div>Source: <span className="text-text-main">arXiv cs.LG</span></div>
+                <div>Reference: <span className="text-text-main">llama-3-fp8</span></div>
+                <div>Confidence: <span className="text-text-main">0.982</span></div>
+                <div>Sync: <span className="text-text-main">07:00 UTC</span></div>
+              </div>
+
+              <div className="space-y-6 text-sm text-text-main/80 leading-relaxed font-sans">
+                <p>
+                  Foundational model execution limits are shifting rapidly towards decentralized local setups. This report covers the structural optimizations implemented in the <strong>Llama-3-FP8</strong> local quantization framework, enabling a massive <strong>4x acceleration</strong> in local token generation speed.
+                </p>
+
+                <h3 className="font-heading text-2xl text-text-main italic pt-2">Key Optimizations</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  <div className="bg-surface-dim p-5 border border-border-subtle">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-text-main mb-2">1. Memory-Level Fusion</h4>
+                    <p className="text-xs text-text-muted">
+                      Kernel operations are fused directly into memory pools, preventing off-chip transit latency and reducing cache-miss overhead.
+                    </p>
+                  </div>
+                  <div className="bg-surface-dim p-5 border border-border-subtle">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-text-main mb-2">2. Static Static-Scale Quantization</h4>
+                    <p className="text-xs text-text-muted">
+                      Uses 8-bit floating point scales pre-computed statically, preserving model accuracy while maintaining low latency profiles.
+                    </p>
+                  </div>
+                </div>
+
+                <h3 className="font-heading text-2xl text-text-main italic pt-4">Implementation Architecture</h3>
+                <p>
+                  By compiling custom FlashAttention kernels that interlock directly with the GPU's low-precision hardware acceleration pipelines, the model can generate high-token streams without memory starvation issues.
+                </p>
+
+                <div className="bg-surface-dim p-5 rounded-lg border border-border-subtle font-mono text-xs overflow-x-auto my-4 text-text-main">
+                  <span className="text-text-muted text-[10px] block mb-2">// Sample quantization pipeline script</span>
+                  <span className="text-emerald-700">import</span> torch<br />
+                  <span className="text-emerald-700">from</span> neuralbrief.frontier <span className="text-emerald-700">import</span> load_optimized_engine<br />
+                  <br />
+                  <span className="text-text-muted"># Load quantized model weights</span><br />
+                  engine = load_optimized_engine(<span className="text-rose-700">"llama-3-8b-fp8"</span>, device=<span className="text-rose-700">"cuda"</span>)<br />
+                  <br />
+                  <span className="text-text-muted"># Compile the logic execution graph</span><br />
+                  compiled_pipeline = engine.compile(precision=<span className="text-rose-700">"fp8"</span>, mode=<span className="text-rose-700">"max-autotune"</span>)<br />
+                  output = compiled_pipeline.generate(<span className="text-rose-700">"Synthesize research context..."</span>)
+                </div>
+
+                <h3 className="font-heading text-2xl text-text-main italic pt-4">Consensus Assessment</h3>
+                <p>
+                  The performance gains demonstrate that local, open-weights architecture has matured to a level where it can replace cloud-hosted models for specific vector evaluations, minimizing external hosting costs and removing data privacy leaks.
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
+
+export default Preview;

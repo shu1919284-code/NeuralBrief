@@ -8,6 +8,7 @@ export function TiltCard({ children, className }: { children: React.ReactNode, c
   const [shineX, setShineX] = useState("50%");
   const [shineY, setShineY] = useState("50%");
   const [isHovered, setIsHovered] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return;
@@ -21,8 +22,14 @@ export function TiltCard({ children, className }: { children: React.ReactNode, c
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    setRotateX((y - centerY) / 60); 
-    setRotateY((centerX - x) / 60);
+    // Smooth 3D tilt angles
+    setRotateX((y - centerY) / 50); 
+    setRotateY((centerX - x) / 50);
+  };
+
+  const handleMouseEnter = () => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+    setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
@@ -35,21 +42,33 @@ export function TiltCard({ children, className }: { children: React.ReactNode, c
     <motion.div
       ref={ref}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       animate={{ rotateX, rotateY }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       style={{ transformStyle: "preserve-3d" }}
       className={`relative ${className}`}
     >
+      {/* Glare overlay (glow changes depending on theme) */}
       <div 
-        className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+        className="absolute inset-0 pointer-events-none transition-opacity duration-300 z-20"
         style={{
-          background: `radial-gradient(circle at ${shineX} ${shineY}, rgba(255, 255, 255, 0.4) 0%, transparent 50%)`,
+          background: `radial-gradient(circle at ${shineX} ${shineY}, ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.05)'} 0%, transparent 60%)`,
           opacity: isHovered ? 1 : 0
         }}
       />
-      {children}
+      {/* Inner 3D pop-out container */}
+      <div 
+        style={{ 
+          transform: isHovered ? 'translateZ(25px)' : 'translateZ(0px)', 
+          transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)', 
+          transformStyle: 'preserve-3d' 
+        }}
+        className="relative z-10 w-full h-full"
+      >
+        {children}
+      </div>
     </motion.div>
   );
 }
+
