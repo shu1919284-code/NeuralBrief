@@ -17,6 +17,7 @@ import { BackToTop } from './components/BackToTop';
 import { ReadingTime } from './components/ReadingTime';
 import { FAQ } from './components/FAQ';
 import { DevDashboard } from './components/DevDashboard';
+import { BottomNav } from './components/BottomNav';
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
               <Footer />
               <BackToTop />
               <DevDashboard />
+              <BottomNav />
             </div>
           </LanguageProvider>
         </BookmarkProvider>

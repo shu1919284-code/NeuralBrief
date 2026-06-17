@@ -36,6 +36,12 @@ export function Navbar() {
     }
   }, [showSearch]);
 
+  useEffect(() => {
+    const handler = () => setShowProfile(true);
+    window.addEventListener('openProfile', handler);
+    return () => window.removeEventListener('openProfile', handler);
+  }, []);
+
   const toggleTheme = () => {
     const next = !isDark;
     setIsDark(next);
