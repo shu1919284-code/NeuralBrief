@@ -28,6 +28,7 @@ const en: TranslationMap = {
   // hero
   'hero.headline': 'Stay Ahead of',
   'hero.subheadline': 'the Machine.',
+  'hero.description': 'Subscribe to receive a weekly autonomous technical digest of the most significant AI model releases, framework breakthroughs, and foundation research papers. Curated by specialized agents, delivered directly to your inbox.',
   'hero.emailPlaceholder': 'Enter your email address',
   'hero.ctaButton': 'Get My Briefing',
   'hero.successMessage': 'Successfully subscribed. Welcome.',
@@ -164,6 +165,7 @@ const es: TranslationMap = {
 
   'hero.headline': 'Mantente un paso',
   'hero.subheadline': 'adelante.',
+  'hero.description': 'Suscríbete para recibir un resumen técnico semanal autónomo sobre los lanzamientos de modelos de IA, avances de frameworks y artículos de investigación fundamentales más significativos. Curado por agentes especializados, directo a tu bandeja de entrada.',
   'hero.emailPlaceholder': 'Introduce tu correo electrónico',
   'hero.ctaButton': 'Recibir mi resumen',
   'hero.successMessage': 'Suscripción correcta. Bienvenido.',
@@ -292,6 +294,7 @@ const fr: TranslationMap = {
 
   'hero.headline': 'Gardez une longueur',
   'hero.subheadline': "d'avance.",
+  'hero.description': 'Abonnez-vous pour recevoir un digest technique hebdomadaire autonome sur les lancements de modèles IA, percées de frameworks et articles de recherche fondamentaux les plus importants. Préparé par des agents spécialisés, livré dans votre boîte de réception.',
   'hero.emailPlaceholder': 'Entrez votre adresse e-mail',
   'hero.ctaButton': 'Recevoir mon briefing',
   'hero.successMessage': 'Abonnement réussi. Bienvenue.',
@@ -420,6 +423,7 @@ const hi: TranslationMap = {
 
   'hero.headline': 'तकनीक की दुनिया में',
   'hero.subheadline': 'सबसे आगे रहें।',
+  'hero.description': 'सबसे महत्वपूर्ण AI मॉडल रिलीज़, फ़्रेมवर्क सफलताओं और शोध पत्रों का साप्ताहिक स्वायत्त तकनीकी डाइजेस्ट प्राप्त करने के लिए सदस्यता लें। विशेष एजेंटों द्वारा तैयार, सीधे आपके इनबॉक्स में वितरित।',
   'hero.emailPlaceholder': 'अपना ईमेल पता दर्ज करें',
   'hero.ctaButton': 'मेरा ब्रीफ़िंग पाएँ',
   'hero.successMessage': 'सफलतापूर्वक सदस्यता ली। स्वागत है।',
@@ -548,6 +552,7 @@ const zh: TranslationMap = {
 
   'hero.headline': '掌握前沿',
   'hero.subheadline': 'AI 动态。',
+  'hero.description': '订阅以每周接收关于最重大的 AI 模型发布、框架突破和基础研究论文的自动化技术简报。由专业智能体筛选，直接送达您的收件箱。',
   'hero.emailPlaceholder': '请输入您的电子邮箱',
   'hero.ctaButton': '获取我的简报',
   'hero.successMessage': '订阅成功，欢迎您。',
@@ -676,6 +681,7 @@ const ko: TranslationMap = {
 
   'hero.headline': '기술의 흐름을',
   'hero.subheadline': '앞서 파악하세요.',
+  'hero.description': '가장 중요한 AI 모델 출시, 프레임워크 혁신, 기초 연구 논문에 대한 주간 자율 기술 다이제스트를 받으려면 구독하세요. 전문 에이전트가 큐레이션하여 받은 편지함으로 직접 배달합니다.',
   'hero.emailPlaceholder': '이메일 주소를 입력하세요',
   'hero.ctaButton': '브리핑 받기',
   'hero.successMessage': '구독이 완료되었습니다. 환영합니다.',

@@ -92,7 +92,7 @@ export function Hero(): React.JSX.Element {
         transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="text-sm md:text-base text-text-muted max-w-2xl mx-auto mb-12 leading-relaxed"
       >
-        {t('hero.emailPlaceholder')}
+        {t('hero.description')}
       </motion.p>
 
       <motion.form

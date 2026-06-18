@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useLanguage } from '../contexts/LanguageContext';
+import { db } from '../lib/firebase';
+import { hashEmail } from '../lib/hash';
 
 export function CTA() {
   const { t } = useLanguage();
@@ -9,24 +12,25 @@ export function CTA() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !email.includes('@')) {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed || !trimmed.includes('@')) {
       setStatus('error');
       setTimeout(() => setStatus('idle'), 3000);
       return;
     }
     setStatus('loading');
     try {
-      const { addDoc, collection, serverTimestamp } = await import('firebase/firestore');
-      const { db } = await import('../lib/firebase');
-      await addDoc(collection(db, 'subscribers'), {
-        email,
-        createdAt: serverTimestamp()
-      });
+      const hashedId = await hashEmail(trimmed);
+      await setDoc(
+        doc(db, 'subscribers', hashedId),
+        { email: trimmed, subscribedAt: serverTimestamp(), active: true },
+        { merge: true }
+      );
       setStatus('success');
       setEmail('');
       setTimeout(() => setStatus('idle'), 3000);
-    } catch (e) {
-      console.error('Error subscribing:', e);
+    } catch (err) {
+      console.error('Error subscribing:', err);
       setStatus('error');
       setTimeout(() => setStatus('idle'), 3000);
     }

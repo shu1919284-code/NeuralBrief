@@ -121,11 +121,11 @@ export async function fetchRSSFeed(source: NewsSource): Promise<NewsItem[]> {
       .slice(0, source.maxItemsPerFetch)
       .map((entry): NewsItem | null => {
         // URL: RSS uses <link>, Atom uses <link href="…">
-        let url =
+        const rawLink =
           typeof entry['link'] === 'string'
             ? entry['link']
             : (entry['link'] as Record<string, unknown> | undefined)?.['@_href'];
-        url = typeof url === 'string' ? url.trim() : '';
+        const url: string = typeof rawLink === 'string' ? rawLink.trim() : '';
         if (!url) return null;
 
         const title = String(entry['title'] ?? '').replace(/<[^>]+>/g, '').trim();
