@@ -19,7 +19,7 @@ const router = Router();
 
 // ─── GET /api/briefing/latest ──────────────────────────────────────────────────
 
-const handleLatestBriefing = async (req: any, res: Response): Promise<void> => {
+export const handleLatestBriefing = async (req: any, res: Response): Promise<void> => {
   try {
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
