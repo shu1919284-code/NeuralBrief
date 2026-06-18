@@ -81,11 +81,6 @@ const handleLatestBriefing = async (req: any, res: Response): Promise<void> => {
 // Define /briefing/latest on router before authMiddleware
 router.get('/briefing/latest', handleLatestBriefing);
 
-// Mount on the parent app directly when router is mounted
-router.on('mount', (parent) => {
-  parent.get('/api/briefing/latest', handleLatestBriefing);
-});
-
 // All other digest routes require authentication
 router.use(authMiddleware);
 
