@@ -40,7 +40,7 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
                      '  "source": "string (the primary research source or venue, e.g., arXiv cs.LG, OpenAI Research)",\n' +
                      '  "confidence": number (a float value between 0.0 and 1.0),\n' +
                      '  "summary": "string (a concise 1-2 sentence preview summary of the development)",\n' +
-                     '  "detailedAnalysis": "string (a highly detailed, technical report consisting of 3-4 paragraphs explaining the underlying architectures, optimization techniques, empirical results, and industry significance. Use newlines to separate paragraphs)",\n' +
+                     '  "detailedAnalysis": "string (a highly detailed, technical report consisting of 3-4 paragraphs explaining the underlying architectures, optimization techniques, empirical results, and industry significance. Escape newlines as \\n inside the string value)",\n' +
                      '  "keyPoints": [\n' +
                      '    { "heading": "string (short heading)", "text": "string (detailed description of this point)" },\n' +
                      '    { "heading": "string (short heading)", "text": "string (detailed description of this point)" },\n' +
@@ -73,7 +73,24 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
       content = content.substring(startIdx, endIdx + 1);
     }
 
-    const parsed = JSON.parse(content);
+    // Sanitize literal newlines inside JSON string values to prevent Bad Control Character errors
+    let sanitizedContent = '';
+    let inString = false;
+    let escaped = false;
+    for (let i = 0; i < content.length; i++) {
+      const char = content[i];
+      if (char === '"' && !escaped) {
+        inString = !inString;
+      }
+      if (inString && (char === '\n' || char === '\r')) {
+        sanitizedContent += '\\n';
+      } else {
+        sanitizedContent += char;
+      }
+      escaped = (char === '\\' && !escaped);
+    }
+
+    const parsed = JSON.parse(sanitizedContent);
 
     // Validate shape
     if (
