@@ -30,7 +30,7 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
     const response = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
-        model: 'llama-3-3-70b-versatile',
+        model: 'llama-3.3-70b-versatile',
         messages: [
           {
             role: 'system',
