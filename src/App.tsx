@@ -29,9 +29,16 @@ export default function App() {
 
   useEffect(() => {
     fetch('https://neuralbrief-production.up.railway.app/api/briefing/latest')
-      .then((res) => {
+      .then(async (res) => {
         if (!res.ok) {
-          throw new Error(`Failed to fetch latest briefing: ${res.status}`);
+          let errMsg = `Failed to fetch latest briefing: ${res.status}`;
+          try {
+            const errData = await res.json();
+            if (errData && errData.error) {
+              errMsg = errData.error;
+            }
+          } catch (_) {}
+          throw new Error(errMsg);
         }
         return res.json();
       })

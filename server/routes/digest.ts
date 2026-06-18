@@ -66,8 +66,12 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
 
     let content = response.data?.choices?.[0]?.message?.content || '';
 
-    // Strip any accidental backticks or markdown fences before JSON.parse
-    content = content.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+    // Robust JSON extraction using bounding braces
+    const startIdx = content.indexOf('{');
+    const endIdx = content.lastIndexOf('}');
+    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      content = content.substring(startIdx, endIdx + 1);
+    }
 
     const parsed = JSON.parse(content);
 
