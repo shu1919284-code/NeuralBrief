@@ -34,7 +34,7 @@ const __dirname = path.resolve();
 // ─── Middleware ───────────────────────────────────────────────────────────────
 
 app.use(helmet());
-app.use(cors({ origin: process.env['ALLOWED_ORIGIN'] }));
+app.use(cors({ origin: process.env['ALLOWED_ORIGIN'] || '*' }));
 app.use(express.json());
 app.use(requestLogger);
 
