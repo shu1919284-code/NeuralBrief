@@ -19,7 +19,7 @@ import { runPipelineForUser } from '../cron';
 
 const router = Router();
 
-const CACHE_FILE = path.join(process.cwd(), 'server', 'data', 'briefing_cache.json');
+const CACHE_FILE = path.join(__dirname, '..', 'data', 'briefing_cache.json');
 
 // Memory cache
 let globalBriefingCache: Record<string, { generatedAt: string; data: any }> = {};

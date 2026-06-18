@@ -36,6 +36,7 @@ WORKDIR /app/server
 
 # Non-root user for security
 RUN addgroup -S neural && adduser -S neural -G neural
+RUN chown -R neural:neural /app
 USER neural
 
 # Health check
