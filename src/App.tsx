@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -18,32 +19,39 @@ import { ReadingTime } from './components/ReadingTime';
 import { FAQ } from './components/FAQ';
 import { DevDashboard } from './components/DevDashboard';
 import { BottomNav } from './components/BottomNav';
+import { BriefingPage } from './components/BriefingPage';
 
 export default function App() {
+  const [activePage, setActivePage] = useState<'home' | 'briefing'>('home');
+
   return (
     <AuthProvider>
       <AudioProvider>
         <BookmarkProvider>
           <LanguageProvider>
-            <div className="min-h-screen relative">
-              <ProgressBar />
-              <CustomCursor />
-              <NeuralCanvas />
-              <Navbar />
-              <main>
-                <ReadingTime />
-                <Hero />
-                <FocusDomains />
-                <Engine />
-                <Preview />
-                <CTA />
-                <FAQ />
-              </main>
-              <Footer />
-              <BackToTop />
-              <DevDashboard />
-              <BottomNav />
-            </div>
+            {activePage === 'briefing' ? (
+              <BriefingPage onBack={() => setActivePage('home')} />
+            ) : (
+              <div className="min-h-screen relative">
+                <ProgressBar />
+                <CustomCursor />
+                <NeuralCanvas />
+                <Navbar />
+                <main>
+                  <ReadingTime />
+                  <Hero />
+                  <FocusDomains />
+                  <Engine />
+                  <Preview onOpenBriefing={() => setActivePage('briefing')} />
+                  <CTA />
+                  <FAQ />
+                </main>
+                <Footer />
+                <BackToTop />
+                <DevDashboard />
+                <BottomNav />
+              </div>
+            )}
           </LanguageProvider>
         </BookmarkProvider>
       </AudioProvider>

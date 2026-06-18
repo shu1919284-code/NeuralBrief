@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { TiltCard } from './TiltCard';
 import { BarChart3, Bot, BrainCircuit, Cpu } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { BookmarkButton } from './BookmarkButton';
@@ -65,7 +64,7 @@ export function FocusDomains() {
             className="relative"
           >
             <BookmarkButton sectionId={card.title} />
-            <TiltCard className="bg-transparent border border-border-subtle p-10 h-full hover:border-[#1A1A1A] active:bg-surface-dim transition-colors duration-300 group cursor-pointer">
+            <div className="bg-transparent border border-border-subtle p-10 h-full hover:border-[#1A1A1A] active:bg-surface-dim transition-colors duration-300 group cursor-pointer">
               {card.icon}
               <h3 className="font-heading text-2xl mb-4 group-hover:italic transition-all">{card.title}</h3>
               <p className="text-text-muted text-sm mb-8">{card.desc}</p>
@@ -80,10 +79,12 @@ export function FocusDomains() {
                   <span className="text-text-main flex items-center pr-1">{card.time}</span>
                 </div>
               </div>
-            </TiltCard>
+            </div>
           </motion.div>
         ))}
       </div>
     </section>
   );
 }
+
+export default FocusDomains;

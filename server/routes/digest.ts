@@ -6,6 +6,7 @@
 import { Router } from 'express';
 import type { Response } from 'express';
 import { getFirestore } from 'firebase-admin/firestore';
+import axios from 'axios';
 
 import { authMiddleware } from '../middleware/auth';
 import type { RequestWithUser } from '../middleware/auth';
@@ -16,7 +17,76 @@ import { runPipelineForUser } from '../cron';
 
 const router = Router();
 
-// All digest routes require authentication
+// ─── GET /api/briefing/latest ──────────────────────────────────────────────────
+
+const handleLatestBriefing = async (req: any, res: Response): Promise<void> => {
+  try {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      res.status(500).json({ error: 'GROQ_API_KEY env var is missing' });
+      return;
+    }
+
+    const response = await axios.post(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        model: 'llama-3-3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a technical AI news analyst. Return ONLY a raw JSON object with NO markdown, NO code fences, NO extra text. Fields: { title: string, source: string, confidence: number (0.0-1.0), summary: string (2-3 sentences about a real recent AI development), keyPoints: [{ heading: string, text: string }, { heading: string, text: string }] }'
+          },
+          {
+            role: 'user',
+            content: 'Give me the most significant AI model release or research paper from the last 7 days. Return only the JSON.'
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 800
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        }
+      }
+    );
+
+    let content = response.data?.choices?.[0]?.message?.content || '';
+
+    // Strip any accidental backticks or markdown fences before JSON.parse
+    content = content.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+
+    const parsed = JSON.parse(content);
+
+    // Validate shape
+    if (
+      typeof parsed.title !== 'string' ||
+      typeof parsed.source !== 'string' ||
+      typeof parsed.confidence !== 'number' ||
+      typeof parsed.summary !== 'string' ||
+      !Array.isArray(parsed.keyPoints) ||
+      parsed.keyPoints.some((kp: any) => !kp || typeof kp.heading !== 'string' || typeof kp.text !== 'string')
+    ) {
+      res.status(500).json({ error: 'Invalid response shape from Groq API' });
+      return;
+    }
+
+    res.json(parsed);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+};
+
+// Define /briefing/latest on router before authMiddleware
+router.get('/briefing/latest', handleLatestBriefing);
+
+// Mount on the parent app directly when router is mounted
+router.on('mount', (parent) => {
+  parent.get('/api/briefing/latest', handleLatestBriefing);
+});
+
+// All other digest routes require authentication
 router.use(authMiddleware);
 
 // ─── GET /api/digest ──────────────────────────────────────────────────────────
