@@ -9,6 +9,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { authMiddleware } from '../middleware/auth';
 import type { RequestWithUser } from '../middleware/auth';
@@ -16,6 +17,9 @@ import { AppError, successResponse, errorResponse } from '../types';
 import type { DigestPayload } from '../types';
 import { logger } from '../utils/logger';
 import { runPipelineForUser } from '../cron';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = Router();
 
