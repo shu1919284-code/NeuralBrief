@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -23,6 +23,27 @@ import { BriefingPage } from './components/BriefingPage';
 
 export default function App() {
   const [activePage, setActivePage] = useState<'home' | 'briefing'>('home');
+  const [briefingData, setBriefingData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('https://neuralbrief-production.up.railway.app/api/briefing/latest')
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch latest briefing: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setBriefingData(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : String(err));
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <AuthProvider>
@@ -30,7 +51,12 @@ export default function App() {
         <BookmarkProvider>
           <LanguageProvider>
             {activePage === 'briefing' ? (
-              <BriefingPage onBack={() => setActivePage('home')} />
+              <BriefingPage 
+                onBack={() => setActivePage('home')} 
+                data={briefingData} 
+                loading={loading}
+                error={error}
+              />
             ) : (
               <div className="min-h-screen relative">
                 <ProgressBar />
@@ -42,7 +68,12 @@ export default function App() {
                   <Hero />
                   <FocusDomains />
                   <Engine />
-                  <Preview onOpenBriefing={() => setActivePage('briefing')} />
+                  <Preview 
+                    onOpenBriefing={() => setActivePage('briefing')} 
+                    data={briefingData}
+                    loading={loading}
+                    error={error}
+                  />
                   <CTA />
                   <FAQ />
                 </main>

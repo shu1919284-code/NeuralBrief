@@ -2,7 +2,17 @@ import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export function Preview({ onOpenBriefing }: { onOpenBriefing: () => void }) {
+export function Preview({ 
+  onOpenBriefing, 
+  data, 
+  loading, 
+  error 
+}: { 
+  onOpenBriefing: () => void;
+  data: any;
+  loading: boolean;
+  error: string | null;
+}) {
   const { t } = useLanguage();
   const ref = useRef<HTMLElement>(null);
   
@@ -13,6 +23,57 @@ export function Preview({ onOpenBriefing }: { onOpenBriefing: () => void }) {
 
   const y1 = useTransform(scrollYProgress, [0, 1], [50, -50]);
   const y2 = useTransform(scrollYProgress, [0, 1], [-30, 30]);
+
+  const renderCardContent = () => {
+    if (loading) {
+      return (
+        <div className="bg-surface-dim p-8 border border-transparent animate-pulse">
+          <div className="h-7 bg-text-muted/15 rounded w-3/4 mb-4" />
+          <div className="space-y-2 mb-8">
+            <div className="h-4 bg-text-muted/10 rounded w-full" />
+            <div className="h-4 bg-text-muted/10 rounded w-5/6" />
+          </div>
+          <div className="flex justify-between items-center border-t border-border-subtle pt-4">
+            <div className="h-4 bg-text-muted/10 rounded w-1/3" />
+            <div className="h-4 bg-text-muted/10 rounded w-1/6" />
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="bg-surface-dim p-8 border border-rose-500/20 text-center text-rose-500">
+          <p className="text-sm font-bold font-heading mb-2">Failed to align neural feed</p>
+          <p className="text-xs text-text-muted mb-4">{error}</p>
+        </div>
+      );
+    }
+
+    if (!data) return null;
+
+    return (
+      <div className="bg-surface-dim p-8 border border-transparent hover:border-border-subtle">
+        <h5 className="font-heading text-2xl mb-4 transition-all">{data.title}</h5>
+        <p className="text-sm text-text-main/70 mb-8 leading-relaxed max-w-2xl">
+          {data.summary}
+        </p>
+        <div className="flex flex-wrap items-center justify-between text-[10px] uppercase tracking-widest gap-4 border-t border-border-subtle pt-4">
+          <div className="flex gap-6 flex-wrap font-bold">
+            <span className="text-text-main">Update</span>
+            <span className="text-text-muted">{data.source}</span>
+            <span className="text-text-muted">Conf: {data.confidence.toFixed(3)}</span>
+          </div>
+          <button
+            onClick={onOpenBriefing}
+            className="font-heading italic hover:opacity-50 active:scale-95 transition-all text-xs cursor-pointer"
+          >
+            Read Full Doc →
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <section ref={ref} className="py-32 px-6 md:px-16 max-w-7xl mx-auto" id="preview">
@@ -60,7 +121,17 @@ export function Preview({ onOpenBriefing }: { onOpenBriefing: () => void }) {
               <div className="sm:ml-auto text-[10px] text-text-muted uppercase tracking-widest">07:00 UTC</div>
             </div>
             
-            <h3 className="font-heading text-3xl md:text-5xl mb-8 leading-tight">NeuralBrief — Multi-Agent <span className="italic">Native Support Drops</span></h3>
+            <h3 className="font-heading text-3xl md:text-5xl mb-8 leading-tight">
+              {loading ? (
+                <div className="h-10 bg-text-muted/10 rounded w-2/3 animate-pulse" />
+              ) : error || !data ? (
+                "NeuralBrief — Latest Intel Stream"
+              ) : (
+                <>
+                  NeuralBrief — <span className="italic">Latest Briefing Feed</span>
+                </>
+              )}
+            </h3>
             
             <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-text-muted mb-12 border-b border-border-subtle pb-4">
               Personalized Stream / 3 Primary Signals / 3200 Tokens
@@ -70,27 +141,7 @@ export function Preview({ onOpenBriefing }: { onOpenBriefing: () => void }) {
               <span className="text-[10px] uppercase tracking-widest font-bold text-text-muted block mb-4">
                 01 / Core Model Analytics
               </span>
-              <div 
-                className="bg-surface-dim p-8 border border-transparent hover:border-border-subtle"
-              >
-                <h5 className="font-heading text-2xl mb-4 transition-all">Open-weights frontier framework performs 4x faster on local runtimes</h5>
-                <p className="text-sm text-text-main/70 mb-8 leading-relaxed max-w-2xl">
-                  Architectural breakdown demonstrates parallel orchestration improvements, minimizing token generation overhead for processing complex structural reasoning dependencies.
-                </p>
-                <div className="flex flex-wrap items-center justify-between text-[10px] uppercase tracking-widest gap-4 border-t border-border-subtle pt-4">
-                  <div className="flex gap-6 flex-wrap font-bold">
-                    <span className="text-text-main">Update</span>
-                    <span className="text-text-muted">llama-3-fp8</span>
-                    <span className="text-text-muted">Conf: 0.982</span>
-                  </div>
-                  <button
-                    onClick={onOpenBriefing}
-                    className="font-heading italic hover:opacity-50 active:scale-95 transition-all text-xs cursor-pointer"
-                  >
-                    Read Full Doc →
-                  </button>
-                </div>
-              </div>
+              {renderCardContent()}
             </div>
           </div>
         </div>

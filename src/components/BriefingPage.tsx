@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { X, Loader2 } from 'lucide-react';
 
 interface KeyPoint {
@@ -11,56 +11,21 @@ interface BriefingData {
   source: string;
   confidence: number;
   summary: string;
+  detailedAnalysis: string;
   keyPoints: KeyPoint[];
 }
 
-export function BriefingPage({ onBack }: { onBack: () => void }) {
-  const [data, setData] = useState<BriefingData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchBriefing = async (): Promise<BriefingData> => {
-    const res = await fetch('https://neuralbrief-production.up.railway.app/api/briefing/latest');
-    if (!res.ok) {
-      throw new Error(`Failed to fetch latest briefing: ${res.status}`);
-    }
-    const parsed = await res.json();
-    
-    // Validate shape
-    if (
-      !parsed ||
-      typeof parsed.title !== 'string' ||
-      typeof parsed.source !== 'string' ||
-      typeof parsed.confidence !== 'number' ||
-      typeof parsed.summary !== 'string' ||
-      !Array.isArray(parsed.keyPoints) ||
-      parsed.keyPoints.some((kp: any) => !kp || typeof kp.heading !== 'string' || typeof kp.text !== 'string')
-    ) {
-      throw new Error('Invalid briefing data format received');
-    }
-    return parsed;
-  };
-
-  useEffect(() => {
-    let active = true;
-    fetchBriefing()
-      .then((parsedData) => {
-        if (active) {
-          setData(parsedData);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (active) {
-          setError(err instanceof Error ? err.message : String(err));
-          setLoading(false);
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
+export function BriefingPage({ 
+  onBack, 
+  data, 
+  loading, 
+  error 
+}: { 
+  onBack: () => void; 
+  data: BriefingData | null; 
+  loading: boolean; 
+  error: string | null; 
+}) {
   return (
     <div className="min-h-screen bg-surface px-6 py-16 md:px-16 max-w-4xl mx-auto flex flex-col justify-start">
       <button
@@ -81,24 +46,6 @@ export function BriefingPage({ onBack }: { onBack: () => void }) {
         <div className="flex-1 flex flex-col items-center justify-center py-20 text-rose-500 gap-4 text-center">
           <span className="text-sm font-bold font-heading">Failed to align neural feed</span>
           <p className="text-xs text-text-muted max-w-md">{error}</p>
-          <button 
-            onClick={() => {
-              setLoading(true);
-              setError(null);
-              fetchBriefing()
-                .then((d) => {
-                  setData(d);
-                  setLoading(false);
-                })
-                .catch((err) => {
-                  setError(err instanceof Error ? err.message : String(err));
-                  setLoading(false);
-                });
-            }}
-            className="mt-4 text-[10px] uppercase tracking-widest border border-border-subtle px-4 py-2 hover:bg-surface-dim font-bold transition-all cursor-pointer"
-          >
-            Retry Sync
-          </button>
         </div>
       )}
 
@@ -119,17 +66,24 @@ export function BriefingPage({ onBack }: { onBack: () => void }) {
           </div>
 
           <div className="space-y-6 text-sm text-text-main/80 leading-relaxed font-sans">
-            <p>
+            <p className="font-medium text-text-main text-base border-l-2 border-border-subtle pl-4 mb-8 py-1 italic">
               {data.summary}
             </p>
 
-            <h3 className="font-heading text-2xl text-text-main italic pt-2">Key Optimizations</h3>
+            <h3 className="font-heading text-2xl text-text-main italic pt-4 mb-4">Detailed Technical Report</h3>
+            {data.detailedAnalysis.split('\n').filter(p => p.trim()).map((para, idx) => (
+              <p key={idx} className="mb-4 text-justify">
+                {para}
+              </p>
+            ))}
+
+            <h3 className="font-heading text-2xl text-text-main italic pt-8 mb-4">Key Takeaways</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
               {data.keyPoints.map((kp, idx) => (
-                <div key={idx} className="bg-surface-dim p-5 border border-border-subtle">
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-text-main mb-2">{kp.heading}</h4>
-                  <p className="text-xs text-text-muted">
+                <div key={idx} className="bg-surface-dim p-6 border border-border-subtle flex flex-col justify-start">
+                  <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-2">0{idx + 1} / {kp.heading}</span>
+                  <p className="text-xs text-text-muted leading-relaxed">
                     {kp.text}
                   </p>
                 </div>

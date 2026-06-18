@@ -34,15 +34,27 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
         messages: [
           {
             role: 'system',
-            content: 'You are a technical AI news analyst. Return ONLY a raw JSON object with NO markdown, NO code fences, NO extra text. Fields: { title: string, source: string, confidence: number (0.0-1.0), summary: string (2-3 sentences about a real recent AI development), keyPoints: [{ heading: string, text: string }, { heading: string, text: string }] }'
+            content: 'You are a senior technical AI news analyst. Return ONLY a raw JSON object with NO markdown, NO code fences, and NO extra text. Fields:\n' +
+                     '{\n' +
+                     '  "title": "string (a highly specific, technical title)",\n' +
+                     '  "source": "string (the primary research source or venue, e.g., arXiv cs.LG, OpenAI Research)",\n' +
+                     '  "confidence": number (a float value between 0.0 and 1.0),\n' +
+                     '  "summary": "string (a concise 1-2 sentence preview summary of the development)",\n' +
+                     '  "detailedAnalysis": "string (a highly detailed, technical report consisting of 3-4 paragraphs explaining the underlying architectures, optimization techniques, empirical results, and industry significance. Use newlines to separate paragraphs)",\n' +
+                     '  "keyPoints": [\n' +
+                     '    { "heading": "string (short heading)", "text": "string (detailed description of this point)" },\n' +
+                     '    { "heading": "string (short heading)", "text": "string (detailed description of this point)" },\n' +
+                     '    { "heading": "string (short heading)", "text": "string (detailed description of this point)" }\n' +
+                     '  ]\n' +
+                     '}'
           },
           {
             role: 'user',
-            content: 'Give me the most significant AI model release or research paper from the last 7 days. Return only the JSON.'
+            content: 'Give me the most significant AI model release, framework breakthrough, or foundation model research paper from the last 7 days. Provide a deep technical analysis. Return only the raw JSON.'
           }
         ],
         temperature: 0.3,
-        max_tokens: 800
+        max_tokens: 1500
       },
       {
         headers: {
@@ -65,6 +77,7 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
       typeof parsed.source !== 'string' ||
       typeof parsed.confidence !== 'number' ||
       typeof parsed.summary !== 'string' ||
+      typeof parsed.detailedAnalysis !== 'string' ||
       !Array.isArray(parsed.keyPoints) ||
       parsed.keyPoints.some((kp: any) => !kp || typeof kp.heading !== 'string' || typeof kp.text !== 'string')
     ) {
