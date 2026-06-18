@@ -54,7 +54,8 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
           }
         ],
         temperature: 0.3,
-        max_tokens: 1500
+        max_tokens: 1500,
+        response_format: { type: 'json_object' }
       },
       {
         headers: {
@@ -73,7 +74,7 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
       content = content.substring(startIdx, endIdx + 1);
     }
 
-    // Sanitize literal newlines inside JSON string values to prevent Bad Control Character errors
+    // Sanitize literal control characters (ASCII < 32) inside JSON string values to prevent parser errors
     let sanitizedContent = '';
     let inString = false;
     let escaped = false;
@@ -82,8 +83,12 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
       if (char === '"' && !escaped) {
         inString = !inString;
       }
-      if (inString && (char === '\n' || char === '\r')) {
-        sanitizedContent += '\\n';
+      if (inString && char.charCodeAt(0) < 32) {
+        if (char === '\n' || char === '\r') {
+          sanitizedContent += '\\n';
+        } else if (char === '\t') {
+          sanitizedContent += '\\t';
+        }
       } else {
         sanitizedContent += char;
       }
