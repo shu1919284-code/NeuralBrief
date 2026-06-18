@@ -45,7 +45,7 @@ export function CTA() {
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         className="max-w-5xl mx-auto"
       >
-        <div className="bg-surface-dim border border-border-subtle p-12 md:p-20 text-center rounded-tl-[60px] rounded-br-[60px]">
+        <div className="bg-surface-dim border border-border-subtle p-6 md:p-20 text-center rounded-tl-[40px] md:rounded-tl-[60px] rounded-br-[40px] md:rounded-br-[60px]">
           <h2 className="font-heading text-5xl md:text-6xl mb-6">{t('cta_title_1')} <span className="italic">{t('cta_title_2')}</span></h2>
           <p className="text-[10px] uppercase tracking-widest opacity-80 mb-10 font-bold">
             {t('cta_desc')}

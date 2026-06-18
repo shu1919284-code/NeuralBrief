@@ -55,7 +55,7 @@ export function Footer(): React.JSX.Element {
   };
 
   return (
-    <footer className="py-16 border-t border-border-subtle bg-surface px-6 md:px-16">
+    <footer className="pt-16 pb-28 md:pb-16 border-t border-border-subtle bg-surface px-6 md:px-16">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12 mb-16">
 

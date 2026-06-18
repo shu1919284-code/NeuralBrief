@@ -186,7 +186,7 @@ export function BottomNav(): React.JSX.Element {
                       color: isActive ? 'var(--color-text-main)' : 'var(--color-text-muted)',
                     }}
                     transition={{ duration: 0.2 }}
-                    className="text-[9px] uppercase tracking-widest font-bold leading-none"
+                    className="text-[8px] sm:text-[9px] uppercase tracking-wider font-bold leading-none"
                   >
                     {/* Fallback to tab id if translation key not yet added */}
                     {t(tab.labelKey as Parameters<typeof t>[0]) || tab.id}
