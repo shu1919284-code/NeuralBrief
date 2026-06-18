@@ -37,7 +37,7 @@ export function CTA() {
   };
 
   return (
-    <section className="px-6 md:px-16 py-24 mb-10 overflow-hidden text-text-main">
+    <section id="cta" className="px-6 md:px-16 py-24 mb-10 overflow-hidden text-text-main">
       <motion.div 
         initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}

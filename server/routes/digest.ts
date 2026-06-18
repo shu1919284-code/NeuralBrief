@@ -51,10 +51,23 @@ const saveFileCache = () => {
 // Initial load
 loadFileCache();
 
+/**
+ * Resolve the API key for a given section using the fallback chain:
+ *   section-specific key → backup1 → backup2 → main fallback
+ */
+const resolveApiKey = (sectionEnvVar: string): string | undefined => {
+  return (
+    process.env[sectionEnvVar] ||
+    process.env.GROQ_API_KEY_BACKUP_1 ||
+    process.env.GROQ_API_KEY_BACKUP_2 ||
+    process.env.GROQ_API_KEY
+  );
+};
+
 const getCachedBriefing = async (key: string): Promise<any | null> => {
   // Check memory / file cache first
   let cached = globalBriefingCache[key];
-  
+
   // Try Firestore next
   try {
     const db = getFirestore();
@@ -102,6 +115,41 @@ const setCachedBriefing = async (key: string, data: any): Promise<void> => {
   }
 };
 
+/**
+ * Sanitize literal control characters inside JSON string values.
+ * Prevents JSON.parse from failing on unescaped newlines/tabs in LLM output.
+ */
+const sanitizeJsonContent = (content: string): string => {
+  // Extract the JSON block using bounding braces
+  const startIdx = content.indexOf('{');
+  const endIdx = content.lastIndexOf('}');
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    content = content.substring(startIdx, endIdx + 1);
+  }
+
+  let sanitized = '';
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < content.length; i++) {
+    const char = content[i];
+    if (char === '"' && !escaped) {
+      inString = !inString;
+    }
+    if (inString && char.charCodeAt(0) < 32) {
+      if (char === '\n' || char === '\r') {
+        sanitized += '\\n';
+      } else if (char === '\t') {
+        sanitized += '\\t';
+      }
+      // Skip other control chars
+    } else {
+      sanitized += char;
+    }
+    escaped = (char === '\\' && !escaped);
+  }
+  return sanitized;
+};
+
 // ─── GET /api/briefing/latest ──────────────────────────────────────────────────
 
 export const handleLatestBriefing = async (req: any, res: Response): Promise<void> => {
@@ -115,9 +163,9 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
       }
     }
 
-    const apiKey = process.env.GROQ_API_KEY_LATEST || process.env.GROQ_API_KEY;
+    const apiKey = resolveApiKey('GROQ_API_KEY_LATEST');
     if (!apiKey) {
-      res.status(500).json({ error: 'GROQ_API_KEY env var is missing' });
+      res.status(500).json({ error: 'No Groq API key configured. Set GROQ_API_KEY_LATEST or GROQ_API_KEY.' });
       return;
     }
 
@@ -159,37 +207,9 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
       }
     );
 
-    let content = response.data?.choices?.[0]?.message?.content || '';
-
-    // Robust JSON extraction using bounding braces
-    const startIdx = content.indexOf('{');
-    const endIdx = content.lastIndexOf('}');
-    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-      content = content.substring(startIdx, endIdx + 1);
-    }
-
-    // Sanitize literal control characters (ASCII < 32) inside JSON string values to prevent parser errors
-    let sanitizedContent = '';
-    let inString = false;
-    let escaped = false;
-    for (let i = 0; i < content.length; i++) {
-      const char = content[i];
-      if (char === '"' && !escaped) {
-        inString = !inString;
-      }
-      if (inString && char.charCodeAt(0) < 32) {
-        if (char === '\n' || char === '\r') {
-          sanitizedContent += '\\n';
-        } else if (char === '\t') {
-          sanitizedContent += '\\t';
-        }
-      } else {
-        sanitizedContent += char;
-      }
-      escaped = (char === '\\' && !escaped);
-    }
-
-    const parsed = JSON.parse(sanitizedContent);
+    const content = response.data?.choices?.[0]?.message?.content || '';
+    const sanitized = sanitizeJsonContent(content);
+    const parsed = JSON.parse(sanitized);
 
     // Validate shape
     if (
@@ -205,13 +225,167 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
       return;
     }
 
-    // Cache successful response
     await setCachedBriefing('latest', parsed);
-
     res.json(parsed);
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
+};
+
+// ─── Domain-specific prompts ───────────────────────────────────────────────────
+
+interface DomainConfig {
+  id: string;
+  title: string;
+  envKey: string;
+  systemPrompt: string;
+}
+
+const DOMAIN_CONFIGS: DomainConfig[] = [
+  {
+    id: 'data-science',
+    title: 'Data Science',
+    envKey: 'GROQ_API_KEY_DATA_SCIENCE',
+    systemPrompt: 'You are a senior data science news analyst. Return ONLY a raw JSON object with NO markdown, NO code fences, and NO extra text.\n' +
+      'Scope: Statistical frameworks, data manipulation libraries (Polars, DuckDB, Pandas), optimization, visualization tools, and data engineering breakthroughs from the last 7 days.\n' +
+      'Schema:\n' +
+      '{\n' +
+      '  "id": "data-science",\n' +
+      '  "title": "Data Science",\n' +
+      '  "source": "string (primary research source, e.g., arXiv stat.AP, Polars release)",\n' +
+      '  "confidence": number (0.0-1.0),\n' +
+      '  "summary": "string (1-2 sentence preview of the most significant development)",\n' +
+      '  "detailedAnalysis": "string (3-4 paragraphs technical report, escape newlines as \\n)",\n' +
+      '  "keyPoints": [\n' +
+      '    { "heading": "string", "text": "string" },\n' +
+      '    { "heading": "string", "text": "string" },\n' +
+      '    { "heading": "string", "text": "string" }\n' +
+      '  ]\n' +
+      '}'
+  },
+  {
+    id: 'machine-learning',
+    title: 'Machine Learning',
+    envKey: 'GROQ_API_KEY_MACHINE_LEARNING',
+    systemPrompt: 'You are a senior machine learning news analyst. Return ONLY a raw JSON object with NO markdown, NO code fences, and NO extra text.\n' +
+      'Scope: Model architectures, training pipelines, MLOps, edge deployment, benchmark results, and weight releases from the last 7 days.\n' +
+      'Schema:\n' +
+      '{\n' +
+      '  "id": "machine-learning",\n' +
+      '  "title": "Machine Learning",\n' +
+      '  "source": "string (primary source, e.g., GH: Awesome-MLOps, arXiv cs.LG)",\n' +
+      '  "confidence": number (0.0-1.0),\n' +
+      '  "summary": "string (1-2 sentence preview)",\n' +
+      '  "detailedAnalysis": "string (3-4 paragraphs, escape newlines as \\n)",\n' +
+      '  "keyPoints": [\n' +
+      '    { "heading": "string", "text": "string" },\n' +
+      '    { "heading": "string", "text": "string" },\n' +
+      '    { "heading": "string", "text": "string" }\n' +
+      '  ]\n' +
+      '}'
+  },
+  {
+    id: 'ai-research',
+    title: 'AI Research',
+    envKey: 'GROQ_API_KEY_AI_RESEARCH',
+    systemPrompt: 'You are a senior AI research analyst. Return ONLY a raw JSON object with NO markdown, NO code fences, and NO extra text.\n' +
+      'Scope: Foundational breakthroughs, algorithmic advances, arXiv papers, benchmark-setting results, and academic contributions from the last 7 days.\n' +
+      'Schema:\n' +
+      '{\n' +
+      '  "id": "ai-research",\n' +
+      '  "title": "AI Research",\n' +
+      '  "source": "string (e.g., arXiv cs.LG, NeurIPS, ICML, OpenAI Research)",\n' +
+      '  "confidence": number (0.0-1.0),\n' +
+      '  "summary": "string (1-2 sentence preview)",\n' +
+      '  "detailedAnalysis": "string (3-4 paragraphs, escape newlines as \\n)",\n' +
+      '  "keyPoints": [\n' +
+      '    { "heading": "string", "text": "string" },\n' +
+      '    { "heading": "string", "text": "string" },\n' +
+      '    { "heading": "string", "text": "string" }\n' +
+      '  ]\n' +
+      '}'
+  },
+  {
+    id: 'agentic-frameworks',
+    title: 'Agentic Frameworks',
+    envKey: 'GROQ_API_KEY_AGENTIC_FRAMEWORKS',
+    systemPrompt: 'You are a senior agentic AI systems analyst. Return ONLY a raw JSON object with NO markdown, NO code fences, and NO extra text.\n' +
+      'Scope: Multi-agent graphs, autonomous memory layers, stateful routing, orchestration frameworks (LangChain, CrewAI, AutoGen, LlamaIndex), and agent-native tooling from the last 7 days.\n' +
+      'Schema:\n' +
+      '{\n' +
+      '  "id": "agentic-frameworks",\n' +
+      '  "title": "Agentic Frameworks",\n' +
+      '  "source": "string (e.g., LangChain Changelog, CrewAI GitHub, arXiv cs.AI)",\n' +
+      '  "confidence": number (0.0-1.0),\n' +
+      '  "summary": "string (1-2 sentence preview)",\n' +
+      '  "detailedAnalysis": "string (3-4 paragraphs, escape newlines as \\n)",\n' +
+      '  "keyPoints": [\n' +
+      '    { "heading": "string", "text": "string" },\n' +
+      '    { "heading": "string", "text": "string" },\n' +
+      '    { "heading": "string", "text": "string" }\n' +
+      '  ]\n' +
+      '}'
+  }
+];
+
+/**
+ * Fetch a single domain briefing from Groq using its dedicated API key.
+ * Falls back through GROQ_API_KEY_BACKUP_1 → GROQ_API_KEY_BACKUP_2 → GROQ_API_KEY.
+ */
+const fetchDomainBriefing = async (config: DomainConfig): Promise<any> => {
+  const apiKey = resolveApiKey(config.envKey);
+  if (!apiKey) {
+    throw new Error(`No API key available for domain: ${config.id}`);
+  }
+
+  logger.info(`Fetching domain briefing for ${config.id} using key env: ${config.envKey}`);
+
+  const response = await axios.post(
+    'https://api.groq.com/openai/v1/chat/completions',
+    {
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: config.systemPrompt },
+        {
+          role: 'user',
+          content: `Give me the most significant development in ${config.title} from the last 7 days. Provide a deep technical analysis in the required JSON format. Return only the raw JSON.`
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 1200,
+      response_format: { type: 'json_object' }
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      }
+    }
+  );
+
+  const content = response.data?.choices?.[0]?.message?.content || '';
+  const sanitized = sanitizeJsonContent(content);
+  const parsed = JSON.parse(sanitized);
+
+  // Validate shape
+  if (
+    typeof parsed.id !== 'string' ||
+    typeof parsed.title !== 'string' ||
+    typeof parsed.source !== 'string' ||
+    typeof parsed.confidence !== 'number' ||
+    typeof parsed.summary !== 'string' ||
+    typeof parsed.detailedAnalysis !== 'string' ||
+    !Array.isArray(parsed.keyPoints) ||
+    parsed.keyPoints.some((kp: any) => !kp || typeof kp.heading !== 'string' || typeof kp.text !== 'string')
+  ) {
+    throw new Error(`Invalid shape in Groq response for domain: ${config.id}`);
+  }
+
+  // Ensure id matches expected value (LLM may hallucinate)
+  parsed.id = config.id;
+  parsed.title = config.title;
+
+  return parsed;
 };
 
 // ─── GET /api/briefing/domains ──────────────────────────────────────────────────
@@ -227,158 +401,50 @@ export const handleDomainsBriefing = async (req: any, res: Response): Promise<vo
       }
     }
 
-    const apiKey = process.env.GROQ_API_KEY_DOMAINS || process.env.GROQ_API_KEY;
-    if (!apiKey) {
-      res.status(500).json({ error: 'GROQ_API_KEY env var is missing' });
-      return;
-    }
+    logger.info('Fetching all 4 domain briefings in parallel');
 
-    const response = await axios.post(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a senior technical AI news analyst. Return ONLY a raw JSON object with NO markdown, NO code fences, and NO extra text.\n' +
-                     'Generate the most significant technical news, model release, framework breakthrough, or research paper from the last 7 days for EACH of the following four domains:\n' +
-                     '1. Data Science (statistical frameworks, optimization, visualization, data manipulation libraries)\n' +
-                     '2. Machine Learning (weights, model training pipelines, MLOps, edge deployment)\n' +
-                     '3. AI Research (foundational breakthroughs, algorithmic updates, benchmarks, arXiv papers)\n' +
-                     '4. Agentic Frameworks (multi-agent graphs, memory layers, stateful routing, orchestration)\n\n' +
-                     'Your JSON structure MUST follow this exact schema:\n' +
-                     '{\n' +
-                     '  "domains": [\n' +
-                     '    {\n' +
-                     '      "id": "data-science",\n' +
-                     '      "title": "Data Science",\n' +
-                     '      "source": "string (the primary research source or venue, e.g., arXiv stat.AP, Polars release)",\n' +
-                     '      "confidence": number (a float value between 0.0 and 1.0),\n' +
-                     '      "summary": "string (a concise 1-2 sentence preview summary of the development)",\n' +
-                     '      "detailedAnalysis": "string (a highly detailed, technical report consisting of 3-4 paragraphs explaining the underlying architectures, optimization techniques, empirical results, and industry significance. Escape newlines as \\n inside the string value)",\n' +
-                     '      "keyPoints": [\n' +
-                     '        { "heading": "string (short heading)", "text": "string (detailed description of this point)" },\n' +
-                     '        { "heading": "string (short heading)", "text": "string (detailed description of this point)" },\n' +
-                     '        { "heading": "string (short heading)", "text": "string (detailed description of this point)" }\n' +
-                     '      ]\n' +
-                     '    },\n' +
-                     '    {\n' +
-                     '      "id": "machine-learning",\n' +
-                     '      "title": "Machine Learning",\n' +
-                     '      "source": "string",\n' +
-                     '      "confidence": number,\n' +
-                     '      "summary": "string",\n' +
-                     '      "detailedAnalysis": "string",\n' +
-                     '      "keyPoints": [\n' +
-                     '        { "heading": "string", "text": "string" },\n' +
-                     '        { "heading": "string", "text": "string" },\n' +
-                     '        { "heading": "string", "text": "string" }\n' +
-                     '      ]\n' +
-                     '    },\n' +
-                     '    {\n' +
-                     '      "id": "ai-research",\n' +
-                     '      "title": "AI Research",\n' +
-                     '      "source": "string",\n' +
-                     '      "confidence": number,\n' +
-                     '      "summary": "string",\n' +
-                     '      "detailedAnalysis": "string",\n' +
-                     '      "keyPoints": [\n' +
-                     '        { "heading": "string", "text": "string" },\n' +
-                     '        { "heading": "string", "text": "string" },\n' +
-                     '        { "heading": "string", "text": "string" }\n' +
-                     '      ]\n' +
-                     '    },\n' +
-                     '    {\n' +
-                     '      "id": "agentic-frameworks",\n' +
-                     '      "title": "Agentic Frameworks",\n' +
-                     '      "source": "string",\n' +
-                     '      "confidence": number,\n' +
-                     '      "summary": "string",\n' +
-                     '      "detailedAnalysis": "string",\n' +
-                     '      "keyPoints": [\n' +
-                     '        { "heading": "string", "text": "string" },\n' +
-                     '        { "heading": "string", "text": "string" },\n' +
-                     '        { "heading": "string", "text": "string" }\n' +
-                     '      ]\n' +
-                     '    }\n' +
-                     '  ]\n' +
-                     '}'
-          },
-          {
-            role: 'user',
-            content: 'Give me the latest weekly updates for each of the four focus domains in deep technical detail. Return only the raw JSON.'
-          }
-        ],
-        temperature: 0.3,
-        max_tokens: 3000,
-        response_format: { type: 'json_object' }
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        }
-      }
+    // Fetch all 4 domains in parallel — each uses its own API key
+    const domainResults = await Promise.allSettled(
+      DOMAIN_CONFIGS.map(config => fetchDomainBriefing(config))
     );
 
-    let content = response.data?.choices?.[0]?.message?.content || '';
+    const domains: any[] = [];
+    const errors: string[] = [];
 
-    // Robust JSON extraction using bounding braces
-    const startIdx = content.indexOf('{');
-    const endIdx = content.lastIndexOf('}');
-    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-      content = content.substring(startIdx, endIdx + 1);
-    }
-
-    // Sanitize literal control characters (ASCII < 32) inside JSON string values to prevent parser errors
-    let sanitizedContent = '';
-    let inString = false;
-    let escaped = false;
-    for (let i = 0; i < content.length; i++) {
-      const char = content[i];
-      if (char === '"' && !escaped) {
-        inString = !inString;
-      }
-      if (inString && char.charCodeAt(0) < 32) {
-        if (char === '\n' || char === '\r') {
-          sanitizedContent += '\\n';
-        } else if (char === '\t') {
-          sanitizedContent += '\\t';
-        }
+    domainResults.forEach((result, idx) => {
+      if (result.status === 'fulfilled') {
+        domains.push(result.value);
       } else {
-        sanitizedContent += char;
+        const config = DOMAIN_CONFIGS[idx];
+        logger.error(`Failed to fetch domain ${config.id}`, { error: String(result.reason) });
+        errors.push(`${config.id}: ${String(result.reason)}`);
+        // Push a fallback stub so the frontend can still render the card
+        domains.push({
+          id: config.id,
+          title: config.title,
+          source: 'Unavailable',
+          confidence: 0,
+          summary: 'Domain briefing temporarily unavailable. Please check back later.',
+          detailedAnalysis: 'This domain\'s briefing could not be fetched at this time.',
+          keyPoints: [
+            { heading: 'Status', text: 'Service temporarily unavailable.' }
+          ]
+        });
       }
-      escaped = (char === '\\' && !escaped);
+    });
+
+    if (errors.length > 0) {
+      logger.warn('Some domains failed to fetch', { errors });
     }
 
-    const parsed = JSON.parse(sanitizedContent);
+    const result = { domains };
 
-    // Validate shape
-    if (!parsed || !Array.isArray(parsed.domains) || parsed.domains.length !== 4) {
-      res.status(500).json({ error: 'Invalid domains response shape from Groq API' });
-      return;
+    // Only cache if all 4 domains were successfully fetched
+    if (errors.length === 0) {
+      await setCachedBriefing('domains', result);
     }
 
-    for (const d of parsed.domains) {
-      if (
-        typeof d.id !== 'string' ||
-        typeof d.title !== 'string' ||
-        typeof d.source !== 'string' ||
-        typeof d.confidence !== 'number' ||
-        typeof d.summary !== 'string' ||
-        typeof d.detailedAnalysis !== 'string' ||
-        !Array.isArray(d.keyPoints) ||
-        d.keyPoints.some((kp: any) => !kp || typeof kp.heading !== 'string' || typeof kp.text !== 'string')
-      ) {
-        res.status(500).json({ error: `Invalid shape in domain data for: ${d.id || 'unknown'}` });
-        return;
-      }
-    }
-
-    // Cache successful response
-    await setCachedBriefing('domains', parsed);
-
-    res.json(parsed);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }

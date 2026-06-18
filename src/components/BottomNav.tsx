@@ -69,7 +69,7 @@ const ProfileIcon = (): React.JSX.Element => (
 const TABS: TabDef[] = [
   { id: 'home',    labelKey: 'nav.home',    sectionId: 'hero',    icon: <HomeIcon /> },
   { id: 'digest',  labelKey: 'nav.digest',  sectionId: 'process', icon: <DigestIcon /> },
-  { id: 'topics',  labelKey: 'nav.topics',  sectionId: 'focus',   icon: <TopicsIcon /> },
+  { id: 'topics',  labelKey: 'nav.topics',  sectionId: 'topics',  icon: <TopicsIcon /> },
   { id: 'profile', labelKey: 'nav.profile', sectionId: null,      icon: <ProfileIcon /> },
 ];
 
@@ -77,7 +77,7 @@ const TABS: TabDef[] = [
 const SECTION_IDS: Record<string, TabId> = {
   hero:    'home',
   process: 'digest',
-  focus:   'topics',
+  topics:  'topics',
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────

@@ -78,3 +78,42 @@ body {
   background: var(--color-text-main);
   border-radius: 0;
 }
+
+/* ── Search pulse — fires on section headings matched by search ──────────── */
+@keyframes search-pulse {
+  0%   { text-shadow: 0 0 0px rgba(26,26,26,0); }
+  30%  { text-shadow: 0 0 20px rgba(26,26,26,0.3); }
+  100% { text-shadow: 0 0 0px rgba(26,26,26,0); }
+}
+
+.dark @keyframes search-pulse {
+  0%   { text-shadow: 0 0 0px rgba(245,245,245,0); }
+  30%  { text-shadow: 0 0 20px rgba(245,245,245,0.35); }
+  100% { text-shadow: 0 0 0px rgba(245,245,245,0); }
+}
+
+.search-pulse {
+  animation: search-pulse 0.9s ease-out forwards;
+}
+
+/* ── Nav link hover underline (grows from center) ────────────────────────── */
+nav a {
+  position: relative;
+}
+nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  right: 50%;
+  height: 0.5px;
+  background: rgba(26, 26, 26, 0.5);
+  transition: left 0.25s ease, right 0.25s ease;
+}
+.dark nav a::after {
+  background: rgba(245, 245, 245, 0.5);
+}
+nav a:hover::after {
+  left: 0;
+  right: 0;
+}

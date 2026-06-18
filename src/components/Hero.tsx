@@ -1,58 +1,26 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-
-import { MagneticButton } from '@/components/MagneticButton';
+import React from 'react';
+import { motion } from 'motion/react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { db } from '@/lib/firebase';
-import { hashEmail } from '@/lib/hash';
-
-type SubscribeStatus = 'idle' | 'loading' | 'success' | 'error';
 
 /**
  * Landing page hero section.
- * Renders the headline, subheadline, email subscription form, stats row, and
- * social-proof brand strip. Subscription is de-duplicated via a SHA-256 hashed
- * document ID so the same email address can never create two Firestore records.
+ * Email subscription has been consolidated to the bottom CTA section.
+ * The hero CTA button scrolls the user down to #cta where they can subscribe.
  */
 export function Hero(): React.JSX.Element {
   const { t } = useLanguage();
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<SubscribeStatus>('idle');
 
-  /**
-   * Handles email subscription form submission.
-   * Validates the address, writes (or merges) a subscriber document keyed by
-   * the SHA-256 hash of the email, then shows inline success or error feedback.
-   */
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+  const scrollToCTA = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    const trimmed = email.trim().toLowerCase();
-    if (!trimmed || !trimmed.includes('@')) {
-      setStatus('error');
-      setTimeout(() => setStatus('idle'), 3000);
-      return;
-    }
-
-    setStatus('loading');
-    try {
-      const hashedId = await hashEmail(trimmed);
-      await setDoc(
-        doc(db, 'subscribers', hashedId),
-        { email: trimmed, subscribedAt: serverTimestamp(), active: true },
-        { merge: true },
-      );
-      setStatus('success');
-      setEmail('');
-      setTimeout(() => setStatus('idle'), 3000);
-    } catch {
-      setStatus('error');
-      setTimeout(() => setStatus('idle'), 3000);
+    const ctaSection = document.getElementById('cta');
+    if (ctaSection) {
+      ctaSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   return (
     <section className="relative pt-24 pb-24 px-6 md:px-16 max-w-6xl mx-auto text-center" id="hero">
+      {/* Vertical breathing line */}
       <motion.div
         initial={{ opacity: 0, height: 0 }}
         whileInView={{ opacity: 1, height: 300 }}
@@ -61,6 +29,7 @@ export function Hero(): React.JSX.Element {
         className="hidden md:block absolute left-1/2 top-[450px] w-[1px] bg-border-subtle -translate-x-1/2 z-0"
       />
 
+      {/* Status badge */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -73,6 +42,7 @@ export function Hero(): React.JSX.Element {
         Multi-Agent Orchestration v4.2.0
       </motion.div>
 
+      {/* Main headline */}
       <motion.h1
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -85,6 +55,7 @@ export function Hero(): React.JSX.Element {
         <span className="italic">{t('hero.subheadline')}</span>
       </motion.h1>
 
+      {/* Description */}
       <motion.p
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -95,67 +66,27 @@ export function Hero(): React.JSX.Element {
         {t('hero.description')}
       </motion.p>
 
-      <motion.form
+      {/* Single CTA — scrolls to #cta subscription form */}
+      <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-100px' }}
         transition={{ duration: 1.2, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
         className="max-w-xl mx-auto mb-16 relative z-10"
-        onSubmit={handleSubmit}
       >
-        <AnimatePresence mode="wait">
-          {status === 'success' ? (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="w-full text-center py-2 text-sm italic border-b border-transparent
-                         text-primary font-bold"
-            >
-              {t('hero.successMessage')}
-            </motion.div>
-          ) : status === 'error' ? (
-            <motion.div
-              key="error"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="w-full text-center py-2 text-sm italic border-b border-red-500
-                         text-red-500 font-bold"
-            >
-              {t('hero.errorMessage')}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col sm:flex-row gap-0 border-b border-text-main pb-2 w-full"
-            >
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={status === 'loading'}
-                placeholder={t('hero.emailPlaceholder')}
-                className="bg-transparent border-none flex-1 py-2 px-2 text-text-main
-                           placeholder-text-muted/50 focus:outline-none focus:ring-0 w-full
-                           font-sans italic text-sm disabled:opacity-50"
-              />
-              <MagneticButton
-                className="text-text-main font-bold py-2 px-4 text-[10px] uppercase tracking-widest
-                           hover:opacity-50 active:scale-95 transition-all cursor-pointer
-                           bg-transparent border-none disabled:opacity-50"
-              >
-                {status === 'loading' ? '...' : t('hero.ctaButton')}
-              </MagneticButton>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.form>
+        <a
+          href="#cta"
+          onClick={scrollToCTA}
+          className="inline-flex items-center gap-3 text-[11px] uppercase tracking-widest font-bold
+                     border-b border-text-main pb-2 text-text-main hover:opacity-50
+                     active:scale-95 transition-all cursor-pointer"
+        >
+          Subscribe to Weekly Digest
+          <span className="transition-transform group-hover:translate-x-1">→</span>
+        </a>
+      </motion.div>
 
+      {/* Stats row */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -184,6 +115,7 @@ export function Hero(): React.JSX.Element {
         </div>
       </motion.div>
 
+      {/* Social proof strip */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}

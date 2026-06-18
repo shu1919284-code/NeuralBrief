@@ -134,7 +134,7 @@ export function Preview({
             </h3>
             
             <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-text-muted mb-12 border-b border-border-subtle pb-4">
-              Personalized Stream / 3 Primary Signals / 3200 Tokens
+              Personalized Stream / 3 Signals / ~12 Min Read
             </p>
             
             <div className="relative pt-6">

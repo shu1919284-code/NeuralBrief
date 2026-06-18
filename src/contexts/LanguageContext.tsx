@@ -46,7 +46,7 @@ const en: TranslationMap = {
 
   // footer
   'footer.tagline': 'Intelligence, delivered daily.',
-  'footer.rights': '© 2025 NeuralBrief',
+  'footer.rights': `© ${new Date().getFullYear()} NeuralBrief`,
   'footer.privacyPolicy': 'Privacy Policy',
   'footer.terms': 'Terms of Service',
   'footer.contact': 'Contact',
@@ -100,6 +100,10 @@ const en: TranslationMap = {
   'faq.a4': 'We only send email to your inbox — we never read, index, or store your Gmail messages.',
   'faq.q5': 'Can I change my topics later?',
   'faq.a5': 'Yes — open your profile at any time to add or remove topics. Changes apply from the next digest.',
+  'faq.q6': 'Is NeuralBrief free?',
+  'faq.a6': 'Yes — the core weekly digest is completely free. Subscribe with your email and start receiving intelligence briefings at no cost.',
+  'faq.q7': 'How do I unsubscribe?',
+  'faq.a7': 'One click from any digest email. No login required. Your data is removed within 24 hours.',
 
   // cta
   'cta.title': 'Ready for a smarter morning?',
@@ -230,6 +234,10 @@ const es: TranslationMap = {
   'faq.a4': 'Solo enviamos correos a tu bandeja de entrada — nunca leemos ni almacenamos tus mensajes de Gmail.',
   'faq.q5': '¿Puedo cambiar mis temas más adelante?',
   'faq.a5': 'Sí — abre tu perfil en cualquier momento para añadir o eliminar temas. Los cambios aplican desde el próximo resumen.',
+  'faq.q6': '¿Es gratuito NeuralBrief?',
+  'faq.a6': 'Sí — el resumen semanal principal es completamente gratuito. Suscríbete con tu correo y empieza a recibir informes sin costo alguno.',
+  'faq.q7': '¿Cómo cancelo mi suscripción?',
+  'faq.a7': 'Un clic desde cualquier correo del resumen. Sin inicio de sesión requerido. Tus datos se eliminan en 24 horas.',
 
   'cta.title': '¿Listo para una mañana más inteligente?',
   'cta.subtitle': 'Utilizado por ingenieros de',
@@ -359,6 +367,10 @@ const fr: TranslationMap = {
   'faq.a4': 'Nous envoyons uniquement des e-mails dans votre boîte de réception — nous ne lisons ni ne stockons vos messages Gmail.',
   'faq.q5': 'Puis-je changer mes sujets plus tard ?',
   'faq.a5': "Oui — ouvrez votre profil à tout moment pour ajouter ou supprimer des sujets. Les modifications s'appliquent dès le prochain digest.",
+  'faq.q6': 'NeuralBrief est-il gratuit ?',
+  'faq.a6': "Oui — le digest hebdomadaire principal est entièrement gratuit. Inscrivez-vous avec votre e-mail et commencez à recevoir des briefings sans aucun frais.",
+  'faq.q7': 'Comment me désabonner ?',
+  'faq.a7': "Un clic depuis n'importe quel e-mail de digest. Aucune connexion requise. Vos données sont supprimées sous 24 heures.",
 
   'cta.title': 'Prêt pour des matins plus intelligents ?',
   'cta.subtitle': 'Adopté par des ingénieurs chez',
@@ -488,6 +500,10 @@ const hi: TranslationMap = {
   'faq.a4': 'हम केवल आपके इनबॉक्स में ईमेल भेजते हैं — आपके Gmail संदेश कभी नहीं पढ़ते।',
   'faq.q5': 'क्या मैं बाद में विषय बदल सकता हूँ?',
   'faq.a5': 'हाँ — किसी भी समय अपनी प्रोफ़ाइल खोलें। परिवर्तन अगले डाइजेस्ट से लागू होंगे।',
+  'faq.q6': 'क्या NeuralBrief मुफ़्त है?',
+  'faq.a6': 'हाँ — साप्ताहिक डाइजेस्ट बिल्कुल मुफ़्त है। अपना ईमेल दें और बिना किसी शुल्क के इंटेलिजेंस ब्रीफिंग पाना शुरू करें।',
+  'faq.q7': 'मैं अनसब्सक्राइब कैसे करूँ?',
+  'faq.a7': 'किसी भी डाइजेस्ट ईमेल से एक क्लिक में। लॉगिन की जरूरत नहीं। आपका डेटा 24 घंटे में हटा दिया जाता है।',
 
   'cta.title': 'एक स्मार्ट सुबह के लिए तैयार हैं?',
   'cta.subtitle': 'इन कंपनियों के इंजीनियर भरोसा करते हैं',
@@ -617,6 +633,10 @@ const zh: TranslationMap = {
   'faq.a4': '我们仅向您的收件箱发送邮件，从不读取或存储您的 Gmail 邮件。',
   'faq.q5': '我之后可以更改话题吗？',
   'faq.a5': '可以 — 随时打开个人资料添加或删除话题，变更从下一期简报起生效。',
+  'faq.q6': 'NeuralBrief 是免费的吗？',
+  'faq.a6': '是的 — 每周核心简报完全免费。填写邮箱即可订阅，零费用接收情报简报。',
+  'faq.q7': '如何取消订阅？',
+  'faq.a7': '点击任意简报邮件中的退订链接即可，无需登录。您的数据将在 24 小时内删除。',
 
   'cta.title': '准备好迎接更智慧的每天早晨了吗？',
   'cta.subtitle': '受到这些公司工程师的信赖',
@@ -746,6 +766,10 @@ const ko: TranslationMap = {
   'faq.a4': '받은 편지함에 이메일만 발송하며, Gmail 메시지를 읽거나 저장하지 않습니다.',
   'faq.q5': '나중에 주제를 변경할 수 있나요?',
   'faq.a5': '언제든지 프로필을 열어 주제를 추가하거나 제거할 수 있습니다. 변경 사항은 다음 다이제스트부터 적용됩니다.',
+  'faq.q6': 'NeuralBrief는 무료인가요?',
+  'faq.a6': '네 — 주간 핵심 다이제스트는 완전 무료입니다. 이메일만 등록하면 비용 없이 인텔리전스 브리핑을 받을 수 있습니다.',
+  'faq.q7': '구독을 어떻게 취소하나요?',
+  'faq.a7': '다이제스트 이메일에서 한 번의 클릭으로 취소할 수 있습니다. 로그인 불필요. 데이터는 24시간 내에 삭제됩니다.',
 
   'cta.title': '더 스마트한 아침을 시작할 준비가 되셨나요?',
   'cta.subtitle': '이 기업의 엔지니어들이 신뢰합니다',

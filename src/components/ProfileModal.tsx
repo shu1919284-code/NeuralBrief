@@ -203,7 +203,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                     <button
                       onClick={savePreferences}
                       disabled={saving}
-                      className="w-full bg-text-main text-surface font-bold py-2.5 px-4 rounded-lg text-xs uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+                      className="w-full bg-transparent text-text-main font-bold py-2.5 px-4 border border-border-subtle hover:border-text-main text-xs uppercase tracking-widest hover:bg-surface-dim active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer rounded"
                     >
                       {saving ? 'Saving...' : 'Save Preferences'}
                     </button>
