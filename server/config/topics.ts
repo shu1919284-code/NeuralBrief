@@ -23,11 +23,12 @@ export const TOPICS: Topic[] = [
     relatedTerms: ['model', 'inference', 'training', 'llm', 'generative ai'],
   },
   {
-    id: 'ai-research',
+    id: 'ai_research',
     label: 'AI Research',
     searchTerms: ['ai research', 'paper', 'arxiv', 'benchmark', 'transformer'],
     relatedTerms: ['dataset', 'fine-tuning', 'pretraining', 'alignment', 'rlhf'],
   },
+  // FLAG: currently unused in sources.ts; consider removing later
   {
     id: 'ai-companies',
     label: 'AI Companies',
@@ -75,6 +76,48 @@ export const TOPICS: Topic[] = [
     label: 'Programming',
     searchTerms: ['programming', 'software engineering', 'open source', 'developer'],
     relatedTerms: ['library', 'framework', 'release', 'github', 'typescript'],
+  },
+  {
+    id: 'data_science',
+    label: 'Data Science',
+    searchTerms: ['data science', 'pandas', 'numpy', 'dataframe'],
+    relatedTerms: ['statistics', 'analytics', 'dataset', 'visualization'],
+  },
+  {
+    id: 'machine_learning',
+    label: 'Machine Learning',
+    searchTerms: ['machine learning', 'ml', 'scikit-learn', 'xgboost'],
+    relatedTerms: ['classification', 'regression', 'clustering', 'predictive'],
+  },
+  {
+    id: 'agentic_ai',
+    label: 'Agentic AI',
+    searchTerms: ['agentic ai', 'autonomous agent', 'auto-gpt', 'langchain'],
+    relatedTerms: ['planning', 'tool use', 'reasoning', 'workflow'],
+  },
+  {
+    id: 'mlops',
+    label: 'MLOps',
+    searchTerms: ['mlops', 'model deployment', 'kubeflow', 'mlflow'],
+    relatedTerms: ['monitoring', 'registry', 'pipeline', 'serving'],
+  },
+  {
+    id: 'model_releases',
+    label: 'Model Releases',
+    searchTerms: ['model release', 'new model', 'open source model', 'huggingface'],
+    relatedTerms: ['weights', 'llama', 'mistral', 'gemma'],
+  },
+  {
+    id: 'ai_industry',
+    label: 'AI Industry',
+    searchTerms: ['ai industry', 'ai startup', 'funding', 'acquisition'],
+    relatedTerms: ['investment', 'valuation', 'ceo', 'market'],
+  },
+  {
+    id: 'tools_libraries',
+    label: 'Tools & Libraries',
+    searchTerms: ['ai tool', 'library release', 'framework', 'pytorch'],
+    relatedTerms: ['tensorflow', 'jax', 'api', 'sdk'],
   },
 ];
 

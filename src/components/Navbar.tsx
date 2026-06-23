@@ -3,25 +3,31 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Moon, Sun, Globe, Search, X, LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { ProfileModal } from './ProfileModal';
 
 // Sections tracked for active-link scroll-spy
 const NAV_SECTIONS = [
-  { id: 'topics',  href: '#topics'  },
+  { id: 'topics', href: '#topics' },
   { id: 'process', href: '#process' },
   { id: 'preview', href: '#preview' },
 ];
 
 export function Navbar() {
-  const [isDark, setIsDark] = useState(false);
   const { language, setLanguage, t } = useLanguage();
   const { user, signInWithGoogle, signOut, authError, clearAuthError } = useAuth();
+  const { mode, setMode, theme, setTheme } = useTheme();
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Refs for sliding underline ─────────────────────────────────────────────
+  const linksGroupRef = useRef<HTMLLIElement>(null);
+  const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [underline, setUnderline] = useState({ left: 0, width: 0, visible: false });
 
   // ── Auth error auto-dismiss ───────────────────────────────────────────────
   useEffect(() => {
@@ -45,18 +51,7 @@ export function Navbar() {
     return () => window.removeEventListener('openProfile', handler);
   }, []);
 
-  // ── Theme init from localStorage ──────────────────────────────────────────
-  useEffect(() => {
-    const storedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (storedTheme === 'dark' || (!storedTheme && systemPrefersDark)) {
-      setIsDark(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setIsDark(false);
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
+  // ── Theme initialization is handled by ThemeContext ──
 
   // ── Active section scroll-spy (IntersectionObserver) ──────────────────────
   useEffect(() => {
@@ -74,25 +69,49 @@ export function Navbar() {
     return () => observers.forEach(o => o.disconnect());
   }, []);
 
-  const toggleTheme = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+  // ── Sliding underline: measure active link, update state ──────────────────
+  const updateUnderline = useCallback(() => {
+    const idx = NAV_SECTIONS.findIndex(s => s.id === activeSection);
+    if (idx === -1 || !linksGroupRef.current) {
+      setUnderline(prev => ({ ...prev, visible: false }));
+      return;
     }
-  };
+    const linkEl = linkRefs.current[idx];
+    const groupEl = linksGroupRef.current;
+    if (!linkEl || !groupEl) return;
+
+    const linkRect = linkEl.getBoundingClientRect();
+    const groupRect = groupEl.getBoundingClientRect();
+
+    setUnderline({
+      left: linkRect.left - groupRect.left,
+      width: linkRect.width,
+      visible: true,
+    });
+  }, [activeSection]);
+
+  useEffect(() => { updateUnderline(); }, [updateUnderline]);
+
+  useEffect(() => {
+    window.addEventListener('resize', updateUnderline);
+    return () => window.removeEventListener('resize', updateUnderline);
+  }, [updateUnderline]);
 
   const languages = [
-    { code: 'en', label: 'EN' },
-    { code: 'es', label: 'ES' },
-    { code: 'fr', label: 'FR' },
-    { code: 'hi', label: 'HI' },
-    { code: 'zh', label: 'ZH' },
-    { code: 'ko', label: 'KO' }
+    { code: 'en', label: 'English' },
+    { code: 'es', label: 'Español' },
+    { code: 'fr', label: 'Français' },
+    { code: 'hi', label: 'हिन्दी' },
+    { code: 'zh', label: '中文' },
+    { code: 'ko', label: '한국어' },
+    { code: 'hg', label: 'Hinglish' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'ja', label: '日本語' },
+    { code: 'it', label: 'Italiano' },
+    { code: 'pt', label: 'Português' },
+    { code: 'ru', label: 'Русский' },
+    { code: 'ar', label: 'العربية' },
+    { code: 'nl', label: 'Nederlands' },
   ] as const;
 
   // ── Search: wire to section navigation + domain filtering ─────────────────
@@ -101,20 +120,19 @@ export function Navbar() {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return;
 
-    // Section keyword map
     const sectionMap: Record<string, string> = {
-      domains:   'topics',
-      topics:    'topics',
-      focus:     'topics',
-      pipeline:  'process',
-      engine:    'process',
-      process:   'process',
-      preview:   'preview',
-      digest:    'preview',
-      briefing:  'preview',
-      faq:       'faq',
+      domains: 'topics',
+      topics: 'topics',
+      focus: 'topics',
+      pipeline: 'process',
+      engine: 'process',
+      process: 'process',
+      preview: 'preview',
+      digest: 'preview',
+      briefing: 'preview',
+      faq: 'faq',
       subscribe: 'cta',
-      cta:       'cta',
+      cta: 'cta',
     };
 
     const matchedSectionKey = Object.keys(sectionMap).find(k => query.includes(k));
@@ -123,7 +141,6 @@ export function Navbar() {
       const el = document.getElementById(sectionId);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // Pulse the section heading
         const heading = el.querySelector('h2');
         if (heading) {
           heading.classList.add('search-pulse');
@@ -135,48 +152,50 @@ export function Navbar() {
       return;
     }
 
-    // Domain card filtering — highlight matching cards
     const domainKeywords: Record<string, string> = {
       'data science': 'data-science',
-      'data':         'data-science',
+      'data': 'data-science',
       'machine learning': 'machine-learning',
-      'ml':           'machine-learning',
-      'ai research':  'ai-research',
-      'research':     'ai-research',
-      'agentic':      'agentic-frameworks',
-      'agents':       'agentic-frameworks',
+      'ml': 'machine-learning',
+      'ai research': 'ai-research',
+      'research': 'ai-research',
+      'agentic': 'agentic-frameworks',
+      'agents': 'agentic-frameworks',
     };
 
     const matchedDomain = Object.keys(domainKeywords).find(k => query.includes(k));
     if (matchedDomain) {
       const topicsEl = document.getElementById('topics');
-      if (topicsEl) {
-        topicsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      if (topicsEl) topicsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setShowSearch(false);
       setSearchQuery('');
       return;
     }
 
-    // Fallback: text-content search across headings/paragraphs
     const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, p'));
     const match = elements.find(el => el.textContent?.toLowerCase().includes(query));
     if (match) {
       match.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setShowSearch(false);
-    } else {
-      // Shake the input to signal no match
-      if (searchInputRef.current) {
-        searchInputRef.current.animate([
+    } else if (searchInputRef.current) {
+      searchInputRef.current.animate(
+        [
           { transform: 'translateX(0)' },
           { transform: 'translateX(-6px)' },
           { transform: 'translateX(6px)' },
           { transform: 'translateX(-6px)' },
-          { transform: 'translateX(0)' }
-        ], { duration: 350 });
-      }
+          { transform: 'translateX(0)' },
+        ],
+        { duration: 350 },
+      );
     }
   }, [searchQuery]);
+
+  const navLinkItems = [
+    { href: '#topics', label: t('nav_domains'), id: 'topics' },
+    { href: '#process', label: t('nav_engine'), id: 'process' },
+    { href: '#preview', label: t('nav_digest'), id: 'preview' },
+  ];
 
   return (
     <>
@@ -203,49 +222,79 @@ export function Navbar() {
         transition={{ duration: 0.8, ease: 'easeOut' }}
         className="fixed w-full top-0 z-50 px-6 md:px-16 py-6 flex justify-between items-center bg-surface/80 backdrop-blur-xl border-b border-border-subtle"
       >
-        {/* ── Logo — clicking refreshes the page ─────────────────────────── */}
-        <a
-          href="/"
-          aria-label="NeuralBrief — Go to homepage"
-          className="font-heading font-bold text-2xl italic tracking-tighter text-text-main hover:opacity-70 transition-opacity active:scale-95 inline-block"
-        >
-          NeuralBrief
-        </a>
+        {/* ── Logo & Theme Selector ─────────────────────────── */}
+        <div className="flex flex-col items-start gap-1">
+          <a
+            href="/"
+            aria-label="NeuralBrief — Go to homepage"
+            className="font-heading text-2xl italic tracking-tighter text-text-main hover:opacity-70 transition-opacity active:scale-95 inline-block"
+          >
+            NeuralBrief
+          </a>
 
-        {/* ── Desktop nav links ───────────────────────────────────────────── */}
+          <div className="flex gap-1.5 items-center mt-0.5">
+            {[
+              { id: 'neural', color: mode === 'dark' ? '#f5f5f5' : '#1a1a1a' },
+              { id: 'indigo-intelligence', color: mode === 'dark' ? '#818cf8' : '#4f46e5' },
+              { id: 'emerald-analyst', color: mode === 'dark' ? '#34d399' : '#059669' },
+              { id: 'crimson-real-time', color: mode === 'dark' ? '#f87171' : '#dc2626' },
+              { id: 'amber-insight', color: mode === 'dark' ? '#fbbf24' : '#d97706' },
+              { id: 'golden-executive', color: mode === 'dark' ? '#ffd700' : '#b89030' }
+            ].map((th) => (
+              <button
+                key={th.id}
+                onClick={() => setTheme(th.id as any)}
+                aria-label={`Set theme to ${th.id}`}
+                className="p-2 -m-2 cursor-pointer transition-all focus:outline-none"
+              >
+                <span
+                  className={`block w-2.5 h-2.5 rounded-full transition-all ${theme === th.id ? 'scale-125 ring-1 ring-offset-1 ring-offset-surface ring-[var(--color-accent)] shadow-[0_0_8px_var(--color-theme-glow)]' : 'opacity-60 hover:opacity-100'}`}
+                  style={{ backgroundColor: th.color }}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Desktop nav ──────────────────────────────────────────────────── */}
         <ul className="hidden md:flex gap-8 lg:gap-10 items-center">
-          {/* Section links with active underline */}
-          {[
-            { href: '#topics',  label: t('nav_domains') },
-            { href: '#process', label: t('nav_engine') },
-            { href: '#preview', label: t('nav_digest') },
-          ].map(({ href, label }) => {
-            const sectionId = href.replace('#', '');
-            const isActive = activeSection === sectionId;
-            return (
-              <li key={href}>
+
+          <li ref={linksGroupRef} className="flex items-center gap-8 lg:gap-10 relative">
+            {navLinkItems.map(({ href, id, label }, i) => {
+              const isActive = activeSection === id;
+              return (
                 <a
+                  key={href}
+                  ref={el => { linkRefs.current[i] = el; }}
                   href={href}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.preventDefault();
-                    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }}
-                  className={`relative text-[11px] uppercase tracking-widest font-bold transition-all inline-block pb-0.5
-                    ${isActive ? 'text-text-main nav-link-active' : 'text-text-muted hover:text-text-main'}
-                  `}
+                  className={`text-[11px] uppercase tracking-widest font-bold inline-block pb-0.5 text-text-main transition-opacity duration-200${!isActive ? ' opacity-50 hover:opacity-80' : ''
+                    }`}
                 >
                   {label}
-                  {/* Active underline */}
-                  <span
-                    className="absolute bottom-0 left-0 h-[1.5px] bg-text-main transition-all duration-300 ease-out"
-                    style={{ width: isActive ? '100%' : '0%' }}
-                  />
                 </a>
-              </li>
-            );
-          })}
+              );
+            })}
 
-          {/* Language picker */}
+            <div
+              aria-hidden="true"
+              className="absolute pointer-events-none"
+              style={{
+                backgroundColor: 'var(--color-accent)',
+                bottom: 0,
+                left: `${underline.left}px`,
+                width: `${underline.width}px`,
+                height: '1.5px',
+                opacity: underline.visible ? 1 : 0,
+                transition: 'left 300ms ease, width 300ms ease, opacity 200ms ease',
+              }}
+            />
+          </li>
+
+          {/* ── Language picker ──────────────────────────────────────────── */}
           <li className="relative">
             <button
               onClick={() => setShowLangMenu(!showLangMenu)}
@@ -257,14 +306,12 @@ export function Navbar() {
 
             {showLangMenu && (
               <div className="absolute top-full text-text-main right-0 mt-2 bg-surface border border-border-subtle rounded shadow-xl py-1 min-w-[80px]">
-                {languages.map((lang) => (
+                {languages.map(lang => (
                   <button
                     key={lang.code}
-                    onClick={() => {
-                      setLanguage(lang.code);
-                      setShowLangMenu(false);
-                    }}
-                    className={`block cursor-pointer w-full text-left px-4 py-2 text-[10px] uppercase font-bold tracking-widest hover:bg-surface-dim active:bg-surface transition-colors ${language === lang.code ? 'text-primary' : 'text-text-main'}`}
+                    onClick={() => { setLanguage(lang.code); setShowLangMenu(false); }}
+                    className={`block cursor-pointer w-full text-left px-4 py-2 text-[10px] uppercase font-bold tracking-widest hover:bg-surface-dim active:bg-surface transition-colors ${language === lang.code ? 'text-primary' : 'text-text-main'
+                      }`}
                   >
                     {lang.label}
                   </button>
@@ -273,7 +320,7 @@ export function Navbar() {
             )}
           </li>
 
-          {/* Search */}
+          {/* ── Search ───────────────────────────────────────────────────── */}
           <li>
             <button
               onClick={() => setShowSearch(true)}
@@ -284,7 +331,7 @@ export function Navbar() {
             </button>
           </li>
 
-          {/* User / Auth */}
+          {/* ── User / Auth ───────────────────────────────────────────────── */}
           <li>
             {user ? (
               <div className="flex items-center gap-2">
@@ -295,7 +342,12 @@ export function Navbar() {
                   aria-label="Profile"
                 >
                   {user.photoURL ? (
-                    <img src={user.photoURL} alt="User" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <img
+                      src={user.photoURL}
+                      alt="User"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
                   ) : (
                     <UserIcon size={14} className="text-text-muted" />
                   )}
@@ -321,14 +373,14 @@ export function Navbar() {
             )}
           </li>
 
-          {/* Theme toggle */}
+          {/* ── Theme toggle ─────────────────────────────────────────────── */}
           <li>
             <button
-              onClick={toggleTheme}
-              className="flex items-center justify-center w-8 h-8 rounded-full border border-border-subtle text-text-main hover:bg-text-main hover:text-surface active:scale-90 transition-all focus:outline-none cursor-pointer"
+              onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+              className="flex items-center justify-center w-8 h-8 rounded-full border border-border-subtle text-text-main hover:bg-text-main hover:text-surface active:scale-90 transition-all focus:outline-none cursor-pointer shadow-[0_0_10px_var(--color-theme-glow)]"
               aria-label="Toggle Theme"
             >
-              {isDark ? <Sun size={14} /> : <Moon size={14} />}
+              {mode === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
             </button>
           </li>
         </ul>
@@ -336,7 +388,7 @@ export function Navbar() {
 
       <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
 
-      {/* ── Search overlay ──────────────────────────────────────────────── */}
+      {/* ── Search overlay ───────────────────────────────────────────────── */}
       <AnimatePresence>
         {showSearch && (
           <motion.div
@@ -360,18 +412,21 @@ export function Navbar() {
               className="w-full max-w-3xl"
             >
               <form onSubmit={performSearch} className="relative">
-                <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-text-muted w-8 h-8" strokeWidth={1.5} />
+                <Search
+                  className="absolute left-8 top-1/2 -translate-y-1/2 text-text-muted w-8 h-8"
+                  strokeWidth={1.5}
+                />
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   placeholder={t('search_placeholder')}
                   className="w-full bg-surface-dim border border-border-subtle rounded-full py-8 pl-24 pr-8 text-3xl font-heading italic focus:outline-none focus:border-text-main/30 text-text-main placeholder-text-muted/40 transition-colors"
                 />
               </form>
               <div className="mt-8 text-center text-text-muted text-[10px] uppercase tracking-widest font-bold">
-                Try: "domains", "pipeline", "preview", "faq", "data science", "agentic"
+                {t('nav_search_try')}
               </div>
             </motion.div>
           </motion.div>

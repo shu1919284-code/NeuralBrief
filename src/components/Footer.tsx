@@ -10,11 +10,6 @@ import { hashEmail } from '@/lib/hash';
 
 type SubscribeStatus = 'idle' | 'loading' | 'success' | 'error';
 
-/**
- * Site-wide footer with email subscription form and audio toggle.
- * Subscription is de-duplicated via a SHA-256 hashed Firestore document ID so
- * the same email address can never create two records.
- */
 export function Footer(): React.JSX.Element {
   const { t } = useLanguage();
   const { isAudioEnabled, toggleAudio, playHoverSound } = useAudio();
@@ -22,12 +17,20 @@ export function Footer(): React.JSX.Element {
   const [status, setStatus] = useState<SubscribeStatus>('idle');
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
 
-  /**
-   * Handles the email subscription form submission.
-   * Validates the address, writes (or merges) a subscriber document keyed by
-   * the SHA-256 hash of the lowercase-trimmed email, then shows inline feedback.
-   */
+  const [audioToggleKey, setAudioToggleKey] = useState(0);
+
+  const handleToggleAudio = () => {
+    toggleAudio();
+    setAudioToggleKey((k) => k + 1);
+  };
+
+  const scrollToSection = (id: string) => (e: React.MouseEvent<HTMLAnchorElement>): void => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     const trimmed = email.trim().toLowerCase();
@@ -61,7 +64,10 @@ export function Footer(): React.JSX.Element {
 
           {/* Subscription form */}
           <div className="max-w-sm w-full">
-            <h4 className="font-heading text-xl italic mb-4">{t('footer.tagline')}</h4>
+            <h4 className="font-heading text-xl italic mb-2">{t('footer_stay_ahead')}</h4>
+            <p className="text-[9px] uppercase tracking-widest text-text-muted font-bold mb-6 opacity-60">
+              {t('footer_no_noise')}
+            </p>
             <div className="relative">
               <AnimatePresence mode="wait">
                 {status === 'success' ? (
@@ -70,9 +76,14 @@ export function Footer(): React.JSX.Element {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="w-full py-2 text-sm italic text-primary font-bold"
+                    className="w-full py-2"
                   >
-                    {t('footer.ctaButton')}
+                    <div className="flex items-center gap-2 py-2">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M 5 12 L 10 17 L 19 7" />
+                      </svg>
+                      <span className="text-sm italic text-text-main font-bold">{t('footer_see_tomorrow')}</span>
+                    </div>
                   </motion.div>
                 ) : status === 'error' ? (
                   <motion.div
@@ -93,11 +104,22 @@ export function Footer(): React.JSX.Element {
                     exit={{ opacity: 0 }}
                     className="w-full relative"
                   >
-                    <div className="border-b border-text-main pb-2 flex justify-between items-center w-full">
+                    <div
+                      className="pb-2 flex justify-between items-center w-full"
+                      style={{
+                        borderBottom: '1px solid',
+                        borderColor: inputFocused
+                          ? 'rgba(255, 255, 255, 0.85)'
+                          : 'rgba(255, 255, 255, 0.25)',
+                        transition: 'border-color 200ms ease',
+                      }}
+                    >
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        onFocus={() => setInputFocused(true)}
+                        onBlur={() => setInputFocused(false)}
                         placeholder={t('footer.emailPlaceholder')}
                         disabled={status === 'loading'}
                         className="bg-transparent border-none outline-none w-full text-sm italic
@@ -108,6 +130,10 @@ export function Footer(): React.JSX.Element {
                         disabled={status === 'loading'}
                         className="cursor-pointer hover:opacity-50 active:scale-75 transition-all
                                    disabled:opacity-50 bg-transparent border-none p-0 outline-none"
+                        style={{
+                          transform: inputFocused ? 'translateX(3px)' : 'translateX(0px)',
+                          transition: 'transform 200ms ease',
+                        }}
                       >
                         {status === 'loading' ? (
                           <div className="w-4 h-4 rounded-full border-2 border-text-main border-t-transparent animate-spin" />
@@ -136,15 +162,15 @@ export function Footer(): React.JSX.Element {
 
           {/* Nav links */}
           <div className="flex gap-6 text-[10px] uppercase tracking-[0.2em] font-bold">
-            <span className="cursor-pointer hover:opacity-50 active:scale-95 transition-all">
+            <a href="#topics" onClick={scrollToSection('topics')} className="cursor-pointer hover:opacity-50 active:scale-95 transition-all">
               {t('nav.features')}
-            </span>
-            <span className="cursor-pointer hover:opacity-50 active:scale-95 transition-all">
+            </a>
+            <a href="#how-it-works" onClick={scrollToSection('how-it-works')} className="cursor-pointer hover:opacity-50 active:scale-95 transition-all">
               {t('nav.howItWorks')}
-            </span>
-            <span className="cursor-pointer hover:opacity-50 active:scale-95 transition-all">
+            </a>
+            <a href="#cta" onClick={scrollToSection('cta')} className="cursor-pointer hover:opacity-50 active:scale-95 transition-all">
               {t('nav.pricing')}
-            </span>
+            </a>
           </div>
         </div>
 
@@ -153,7 +179,7 @@ export function Footer(): React.JSX.Element {
           className="flex flex-col md:flex-row justify-between items-center text-[9px] uppercase
                      tracking-[0.4em] opacity-40 font-bold gap-6 border-t border-border-subtle pt-8"
         >
-          <div>{t('footer.rights')}</div>
+          <div>{t('footer.rights').replace(/\d{4}/, String(new Date().getFullYear()))}</div>
           <div className="flex gap-4">
             <button onClick={() => setShowTerms(true)} className="hover:opacity-100 transition-opacity cursor-pointer focus:outline-none">
               {t('footer.terms')}
@@ -163,17 +189,24 @@ export function Footer(): React.JSX.Element {
               {t('footer.privacyPolicy')}
             </button>
           </div>
-          <button
-            onClick={toggleAudio}
+
+          <motion.button
+            key={`audio-toggle-${audioToggleKey}`}
+            onClick={handleToggleAudio}
             onMouseEnter={playHoverSound}
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
             className="flex items-center gap-2 hover:opacity-100 transition-opacity cursor-pointer
                        focus:outline-none"
             aria-label="Toggle Audio"
+            aria-pressed={isAudioEnabled}
           >
             {isAudioEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
-            <span>Sound {isAudioEnabled ? 'On' : 'Off'}</span>
-          </button>
-          <div>Berlin / 52.5200° N, 13.4050° E</div>
+            <span>{t('footer_sound')} {isAudioEnabled ? t('footer_sound_on') : t('footer_sound_off')}</span>
+          </motion.button>
+
+          <div>India / 28.6139° N, 77.2090° E</div>
         </div>
       </div>
 
@@ -198,7 +231,7 @@ export function Footer(): React.JSX.Element {
               >
                 <X size={20} />
               </button>
-              <h3 className="font-heading text-2xl italic mb-6">Terms of Service</h3>
+              <h3 className="font-heading text-2xl italic mb-6">{t('footer.terms')}</h3>
               <div className="space-y-4 text-xs text-text-muted leading-relaxed font-sans">
                 <p>
                   Welcome to <strong>NeuralBrief</strong>. We believe in keeping legal agreements simple, transparent, and human-readable. Here are the core terms of our service:
@@ -254,7 +287,7 @@ export function Footer(): React.JSX.Element {
               >
                 <X size={20} />
               </button>
-              <h3 className="font-heading text-2xl italic mb-6">Privacy Policy</h3>
+              <h3 className="font-heading text-2xl italic mb-6">{t('footer.privacyPolicy')}</h3>
               <div className="space-y-4 text-xs text-text-muted leading-relaxed font-sans">
                 <p>
                   At <strong>NeuralBrief</strong>, your privacy is our top priority. We do not engage in surveillance or data harvesting.

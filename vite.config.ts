@@ -27,13 +27,21 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
     build: {
+      chunkSizeWarningLimit: 600,
       rollupOptions: {
         output: {
           manualChunks: {
-            'vendor-react': ['react', 'react-dom'],
-            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-            'vendor-motion': ['motion/react'],
-            'vendor-d3': ['d3'],
+            'vendor-react':    ['react', 'react-dom'],
+            'vendor-firebase': [
+              'firebase/app',
+              'firebase/auth',
+              'firebase/firestore',
+            ],
+            'vendor-motion':   ['motion/react'],
+            'vendor-three':    ['three'],
+            'vendor-gsap':     ['gsap'],
+            'vendor-d3':       ['d3'],
+            'vendor-charts':   ['recharts'],
           },
         },
       },

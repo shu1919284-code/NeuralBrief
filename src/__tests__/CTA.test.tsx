@@ -16,6 +16,9 @@ vi.mock('@/contexts/LanguageContext', () => ({
         'cta_title_1': 'cta_title_1',
         'cta_title_2': 'cta_title_2',
         'cta_desc': 'cta_desc',
+        'cta_success_heading': "You're in.",
+        'cta_success_desc': 'First briefing arrives at 07:00 UTC.',
+        'cta_error_invalid_email': 'Please enter a valid email.',
       };
       return keys[key] ?? key;
     },
@@ -53,7 +56,7 @@ describe('CTA', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/Successfully subscribed. Welcome./i)).toBeInTheDocument();
+      expect(screen.getByText(/You're in./i)).toBeInTheDocument();
     });
   });
 

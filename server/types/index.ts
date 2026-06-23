@@ -31,6 +31,7 @@ export interface NewsItem {
   topic: string;
   publishedAt: string; // ISO 8601
   snippet: string;
+  changelogEntries?: string[];
 }
 
 /** News item enriched by the Filter Agent. */

@@ -72,6 +72,65 @@ function extractSnippet(raw: unknown): string {
   return truncate(stripped, SNIPPET_MAX_LENGTH);
 }
 
+function extractChangelogEntries(entry: Record<string, unknown>): string[] {
+  let html = '';
+
+  const extractHtml = (val: unknown): string => {
+    if (!val) return '';
+    if (typeof val === 'object' && val !== null && '__cdata' in val) {
+      return String((val as Record<string, unknown>)['__cdata'] ?? '');
+    }
+    return String(val);
+  };
+
+  html =
+    extractHtml(entry['content']) ||
+    extractHtml(entry['description']) ||
+    extractHtml(entry['summary']) ||
+    '';
+  if (!html) return [];
+
+  const $ = cheerio.load(html);
+  const mdEntries: string[] = [];
+
+  // Convert <a> tags to markdown format [text](url) inside list elements or body
+  $('li, p, div').each((_, el) => {
+    $(el).find('a').each((_, aEl) => {
+      const a = $(aEl);
+      const text = a.text().trim();
+      const href = a.attr('href')?.trim();
+      if (text && href) {
+        a.replaceWith(`[${text}](${href})`);
+      }
+    });
+  });
+
+  // 1. Try to find all list items (li)
+  $('li').each((_, el) => {
+    const text = $(el).text().trim();
+    if (text) {
+      mdEntries.push(text.slice(0, 300));
+    }
+  });
+
+  // 2. If no li's, try to split raw text by newlines and find list patterns
+  if (mdEntries.length === 0) {
+    const rawText = $.text();
+    const lines = rawText.split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (/^[-*+•\d+\.]\s+/.test(trimmed)) {
+        const clean = trimmed.replace(/^[-*+•\d+\.]\s+/, '').trim();
+        if (clean) {
+          mdEntries.push(clean.slice(0, 300));
+        }
+      }
+    }
+  }
+
+  return mdEntries.slice(0, 15);
+}
+
 // ─── RSS / Atom ───────────────────────────────────────────────────────────────
 
 /**
@@ -79,88 +138,106 @@ function extractSnippet(raw: unknown): string {
  * Maps feed entries to the canonical NewsItem shape.
  */
 export async function fetchRSSFeed(source: NewsSource): Promise<NewsItem[]> {
-  try {
-    const response = await axios.get<string>(source.url, {
-      timeout: HTTP_TIMEOUT_MS,
-      headers: { 'User-Agent': 'NeuralBrief/1.0 (+https://neuralbrief.app)' },
-      responseType: 'text',
-    });
+  const isArxiv = source.url.includes('arxiv.org');
+  const timeoutMs = isArxiv ? 25_000 : HTTP_TIMEOUT_MS;
+  const maxAttempts = 2; // initial try + 1 retry
 
-    const parsed: unknown = xmlParser.parse(response.data);
-    if (typeof parsed !== 'object' || parsed === null) return [];
+  let attempt = 0;
+  while (attempt < maxAttempts) {
+    attempt++;
+    try {
+      const response = await axios.get<string>(source.url, {
+        timeout: timeoutMs,
+        headers: { 'User-Agent': 'NeuralBrief/1.0 (+https://neuralbrief.app)' },
+        responseType: 'text',
+      });
 
-    const doc = parsed as Record<string, unknown>;
+      const parsed: unknown = xmlParser.parse(response.data);
+      if (typeof parsed !== 'object' || parsed === null) return [];
 
-    // Detect feed format: RSS 2.0 wraps items in rss.channel.item;
-    // Atom wraps entries in feed.entry.
-    type RawEntry = Record<string, unknown>;
+      const doc = parsed as Record<string, unknown>;
 
-    let rawEntries: RawEntry[] = [];
-    let feedTitle = source.name;
+      // Detect feed format: RSS 2.0 wraps items in rss.channel.item;
+      // Atom wraps entries in feed.entry.
+      type RawEntry = Record<string, unknown>;
 
-    if ('rss' in doc) {
-      const channel = (doc['rss'] as Record<string, unknown>)['channel'] as
-        | Record<string, unknown>
-        | undefined;
-      if (!channel) return [];
-      feedTitle = String(channel['title'] ?? source.name);
-      const items = channel['item'];
-      rawEntries = Array.isArray(items) ? items : items ? [items as RawEntry] : [];
-    } else if ('feed' in doc) {
-      const feed = doc['feed'] as Record<string, unknown>;
-      feedTitle = String(feed['title'] ?? source.name);
-      const entries = feed['entry'];
-      rawEntries = Array.isArray(entries)
-        ? entries
-        : entries
-          ? [entries as RawEntry]
-          : [];
+      let rawEntries: RawEntry[] = [];
+      let feedTitle = source.name;
+
+      if ('rss' in doc) {
+        const channel = (doc['rss'] as Record<string, unknown>)['channel'] as
+          | Record<string, unknown>
+          | undefined;
+        if (!channel) return [];
+        feedTitle = String(channel['title'] ?? source.name);
+        const items = channel['item'];
+        rawEntries = Array.isArray(items) ? items : items ? [items as RawEntry] : [];
+      } else if ('feed' in doc) {
+        const feed = doc['feed'] as Record<string, unknown>;
+        feedTitle = String(feed['title'] ?? source.name);
+        const entries = feed['entry'];
+        rawEntries = Array.isArray(entries)
+          ? entries
+          : entries
+            ? [entries as RawEntry]
+            : [];
+      }
+
+      const items: NewsItem[] = rawEntries
+        .slice(0, source.maxItemsPerFetch)
+        .map((entry): NewsItem | null => {
+          // URL: RSS uses <link>, Atom uses <link href="…">
+          const rawLink =
+            typeof entry['link'] === 'string'
+              ? entry['link']
+              : (entry['link'] as Record<string, unknown> | undefined)?.['@_href'];
+          const url: string = typeof rawLink === 'string' ? rawLink.trim() : '';
+          if (!url) return null;
+
+          const title = String(entry['title'] ?? '').replace(/<[^>]+>/g, '').trim();
+          if (!title) return null;
+
+          const snippet =
+            extractSnippet(entry['description']) ||
+            extractSnippet(entry['summary']) ||
+            extractSnippet(entry['content']) ||
+            '';
+
+          const publishedAt =
+            toIso(entry['pubDate']) ||
+            toIso(entry['published']) ||
+            toIso(entry['updated']);
+
+          const changelogEntries = extractChangelogEntries(entry);
+
+          return {
+            id: nanoid(),
+            title,
+            url,
+            source: feedTitle,
+            topic: source.topicIds[0] ?? '',
+            publishedAt,
+            snippet,
+            changelogEntries,
+          };
+        })
+        .filter((item): item is NewsItem => item !== null);
+
+      logger.info(`RSS fetch complete`, { sourceId: source.id, count: items.length });
+      return items;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (attempt < maxAttempts) {
+        logger.warn(`RSS fetch attempt ${attempt} failed for source "${source.id}". Retrying...`, { error: message });
+        // Wait 500ms before retry
+        await new Promise(resolve => setTimeout(resolve, 500));
+        continue;
+      }
+      logger.error(`RSS fetch failed for source "${source.id}" after ${maxAttempts} attempts`, { error: message });
+      throw err; // re-throw on final failure
     }
-
-    const items: NewsItem[] = rawEntries
-      .slice(0, source.maxItemsPerFetch)
-      .map((entry): NewsItem | null => {
-        // URL: RSS uses <link>, Atom uses <link href="…">
-        const rawLink =
-          typeof entry['link'] === 'string'
-            ? entry['link']
-            : (entry['link'] as Record<string, unknown> | undefined)?.['@_href'];
-        const url: string = typeof rawLink === 'string' ? rawLink.trim() : '';
-        if (!url) return null;
-
-        const title = String(entry['title'] ?? '').replace(/<[^>]+>/g, '').trim();
-        if (!title) return null;
-
-        const snippet =
-          extractSnippet(entry['description']) ||
-          extractSnippet(entry['summary']) ||
-          extractSnippet(entry['content']) ||
-          '';
-
-        const publishedAt =
-          toIso(entry['pubDate']) ||
-          toIso(entry['published']) ||
-          toIso(entry['updated']);
-
-        return {
-          id: nanoid(),
-          title,
-          url,
-          source: feedTitle,
-          topic: source.topicIds[0] ?? '',
-          publishedAt,
-          snippet,
-        };
-      })
-      .filter((item): item is NewsItem => item !== null);
-
-    logger.info(`RSS fetch complete`, { sourceId: source.id, count: items.length });
-    return items;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    logger.error(`RSS fetch failed for source "${source.id}"`, { error: message });
-    throw err; // re-throw so fetchAllForUser can capture in Promise.allSettled
   }
+  return []; // fallback, should not be reached
 }
 
 // ─── Hacker News (Algolia API) ────────────────────────────────────────────────

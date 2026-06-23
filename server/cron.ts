@@ -54,21 +54,10 @@ export async function runPipelineForUser(config: UserDigestConfig): Promise<bool
       return false;
     }
 
-    const digest: DigestPayload = {
-      userId: uid,
-      email,
-      sections: summaryResult.data,
-      generatedAt: new Date().toISOString(),
-      topicCount: topics.length,
-      itemCount: summaryResult.data.reduce((acc, s) => acc + s.items.length, 0),
-    };
-
-    // Persist digest to Firestore before attempting email delivery
-    const db = getFirestore();
-    await db.collection('users').doc(uid).collection('digests').add(digest);
+    const itemCount = summaryResult.data.reduce((acc, s) => acc + s.items.length, 0);
 
     const emailResult: AgentResult<{ emailSent: boolean; digestId: string }> =
-      await runEmailAgent(digest.sections, digest.userId);
+      await runEmailAgent(summaryResult.data, uid);
 
     if (!emailResult.success) {
       logger.warn('Email agent failed', { uid, errors: emailResult.metadata.errors });
@@ -78,7 +67,7 @@ export async function runPipelineForUser(config: UserDigestConfig): Promise<bool
     logger.info('Pipeline complete', {
       uid,
       durationMs: Date.now() - pipelineStart,
-      itemCount: digest.itemCount,
+      itemCount,
       emailSent: emailResult.data.emailSent,
       digestId: emailResult.data.digestId,
     });
@@ -116,7 +105,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const snapshot = await db
       .collection('users')
-      .where('digestFrequency', '!=', 'none')
+      .where('digestFrequency', 'in', ['daily', 'weekly'])
       .get();
 
     users = snapshot.docs.map((doc) => ({

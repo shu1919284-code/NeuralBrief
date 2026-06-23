@@ -56,7 +56,7 @@ describe('BookmarkContext', () => {
       popupBlocked: false,
       authError: null,
       clearAuthError: vi.fn(),
-    });
+    } as any);
 
     const { getCtx } = renderBookmarks();
 
@@ -73,7 +73,7 @@ describe('BookmarkContext', () => {
       popupBlocked: false,
       authError: null,
       clearAuthError: vi.fn(),
-    });
+    } as any);
 
     const { getCtx } = renderBookmarks();
 
@@ -100,7 +100,7 @@ describe('BookmarkContext', () => {
       popupBlocked: false,
       authError: null,
       clearAuthError: vi.fn(),
-    });
+    } as any);
 
     const { getCtx } = renderBookmarks();
 
@@ -130,7 +130,7 @@ describe('BookmarkContext', () => {
       popupBlocked: false,
       authError: null,
       clearAuthError: vi.fn(),
-    });
+    } as any);
 
     mockedSetDoc.mockRejectedValueOnce(new Error('Firestore unavailable'));
 
@@ -164,7 +164,7 @@ describe('BookmarkContext', () => {
       popupBlocked: false,
       authError: null,
       clearAuthError: vi.fn(),
-    });
+    } as any);
     // Simulate existing bookmarks in Firestore
     mockedGetDoc.mockResolvedValueOnce({
       exists: () => true,

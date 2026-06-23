@@ -1,5 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { GenerativeModel } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 import { logger } from '../utils/logger.js';
 import { AppError } from '../utils/errors';
@@ -54,7 +53,7 @@ function buildFallbackSection(
  * and graceful fallbacks for all failure modes.
  */
 class GeminiService {
-  private readonly model: GenerativeModel;
+  private readonly client: GoogleGenAI;
   private requestTimestamps: number[] = [];
 
   constructor() {
@@ -63,11 +62,7 @@ class GeminiService {
       throw new AppError(500, 'GEMINI_API_KEY not configured');
     }
 
-    const client = new GoogleGenerativeAI(apiKey);
-
-    this.model = client.getGenerativeModel({
-      model: 'gemini-2.0-flash-exp',
-    });
+    this.client = new GoogleGenAI({ apiKey });
 
     logger.info('GeminiService initialized');
   }
@@ -98,8 +93,11 @@ class GeminiService {
   async summarize(article: FilteredNewsItem): Promise<string> {
     try {
       const prompt = buildSingleSummaryPrompt(article);
-      const result = await this.withRateLimit(() => this.model.generateContent(prompt));
-      const text = result.response.text().trim();
+      const result = await this.withRateLimit(() => this.client.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      }));
+      const text = result.text.trim();
       logger.debug(`Summarized article: ${article.id}`);
       return text;
     } catch (err) {
@@ -117,8 +115,11 @@ class GeminiService {
     let responseText = '';
 
     try {
-      const result = await this.withRateLimit(() => this.model.generateContent(prompt));
-      responseText = result.response.text().trim();
+      const result = await this.withRateLimit(() => this.client.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      }));
+      responseText = result.text.trim();
 
       const cleaned = responseText
         .replace(/^```(?:json)?\s*/i, '')
@@ -162,8 +163,11 @@ class GeminiService {
   ): Promise<SummarizedItem['category']> {
     try {
       const prompt = buildCategorizationPrompt(title, snippet);
-      const result = await this.withRateLimit(() => this.model.generateContent(prompt));
-      const raw = result.response.text().trim().toLowerCase() as SummarizedItem['category'];
+      const result = await this.withRateLimit(() => this.client.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      }));
+      const raw = result.text.trim().toLowerCase() as SummarizedItem['category'];
 
       if (VALID_CATEGORIES.has(raw)) {
         logger.debug(`Categorized "${title}" → ${raw}`);

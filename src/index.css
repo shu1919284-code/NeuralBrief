@@ -11,7 +11,9 @@
   --color-primary: var(--curr-primary);
   --color-text-main: var(--curr-text-main);
   --color-text-muted: var(--curr-text-muted);
-  --color-border-subtle: var(--curr-border-subtle);
+  --color-border-subtle: var(--color-border);
+  
+  --color-accent: var(--color-accent);
 
   --font-sans: 'Inter', sans-serif;
   --font-heading: 'Playfair Display', serif;
@@ -19,6 +21,9 @@
   --font-poiret: 'Inter', sans-serif;
 }
 
+/* ==========================================================================
+   GLOBAL LIGHT MODE FOUNDATION (Fallbacks)
+   ========================================================================== */
 :root {
   --curr-surface: #F5F2ED;
   --curr-surface-dim: #E0DDD7;
@@ -29,9 +34,25 @@
   --curr-primary: #5A5A40;
   --curr-text-main: #1A1A1A;
   --curr-text-muted: rgba(26, 26, 26, 0.7);
-  --curr-border-subtle: rgba(26, 26, 26, 0.1);
+
+  /* Typography Fallbacks */
+  --theme-heading-weight: 600;
+  --theme-heading-spacing: -0.01em;
+  --theme-body-spacing: 0em;
+  --theme-text-transform-heading: none;
+
+  /* Typography Scale — use these across all 
+     section headers for consistency */
+  --text-section-overline: 10px;
+  --text-section-h2: 3rem;        /* 48px = text-5xl */
+  --text-section-h3: 1.875rem;    /* 30px = text-3xl */
+  --text-section-body: 0.875rem;  /* 14px = text-sm  */
+  --text-section-label: 10px;
 }
 
+/* ==========================================================================
+   GLOBAL DARK MODE FOUNDATION (Fallbacks)
+   ========================================================================== */
 .dark {
   --curr-surface: #0a0a0a;
   --curr-surface-dim: #171717;
@@ -42,23 +63,274 @@
   --curr-primary: #8a8a60;
   --curr-text-main: #f5f5f5;
   --curr-text-muted: rgba(245, 245, 245, 0.6);
-  --curr-border-subtle: rgba(245, 245, 245, 0.15);
 }
 
+/* ==========================================================================
+   THEME PERSONALITY MATRIX
+   Each theme defines layout/typography on the base selector,
+   Light Mode colors on the base selector,
+   Dark Mode colors on the .dark selector.
+   ========================================================================== */
+
+/* 1. NEURAL (Default) */
+[data-theme="neural"] {
+  /* Typography & Motion */
+  --theme-heading-weight: 600;
+  --theme-heading-spacing: -0.02em;
+  --theme-body-spacing: 0;
+  --theme-text-transform-heading: none;
+  --motion-speed-multiplier: 1.0;
+
+  /* Light Mode Colors & Tints */
+  --curr-surface: #FCFCFC;
+  --curr-surface-dim: #F2F2F2;
+  --color-accent: #171717;
+  --color-accent-soft: rgba(23, 23, 23, 0.1);
+  --color-theme-glow: rgba(23, 23, 23, 0.05);
+  --color-theme-particle: #171717;
+  --color-border: rgba(23, 23, 23, 0.1);
+  --bg-gradient: radial-gradient(circle at 50% 0%, rgba(23, 23, 23, 0.02) 0%, transparent 60%);
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  --engine-node-glow: 0 0 10px rgba(23, 23, 23, 0.05);
+  --packet-color: #171717;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(23, 23, 23, 0.03) 0%, transparent 50%);
+}
+.dark[data-theme="neural"] {
+  /* Dark Mode Colors & Tints */
+  --curr-surface: #0a0a0a;
+  --curr-surface-dim: #171717;
+  --color-accent: #f5f5f5;
+  --color-accent-soft: rgba(245, 245, 245, 0.1);
+  --color-theme-glow: rgba(245, 245, 245, 0.1);
+  --color-theme-particle: #f5f5f5;
+  --color-border: rgba(245, 245, 245, 0.15);
+  --bg-gradient: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  --engine-node-glow: 0 0 12px rgba(255, 255, 255, 0.1);
+  --packet-color: #f5f5f5;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+}
+
+/* 2. INDIGO INTELLIGENCE (Anthropic/OpenAI research mode) */
+[data-theme="indigo-intelligence"] {
+  /* Typography & Motion */
+  --theme-heading-weight: 400;
+  --theme-heading-spacing: -0.04em;
+  --theme-body-spacing: -0.01em;
+  --theme-text-transform-heading: none;
+  --motion-speed-multiplier: 1.0;
+
+  /* Light Mode Colors & Tints */
+  --curr-surface: #F8FAFC; /* Cool blue-tinted surface */
+  --curr-surface-dim: #E2E8F0;
+  --color-accent: #4f46e5;
+  --color-accent-soft: rgba(79, 70, 229, 0.1);
+  --color-theme-glow: rgba(79, 70, 229, 0.15);
+  --color-theme-particle: #4f46e5;
+  --color-border: rgba(79, 70, 229, 0.2);
+  --bg-gradient: radial-gradient(circle at 50% 0%, rgba(79, 70, 229, 0.05) 0%, transparent 60%);
+  --card-shadow: 0 4px 20px rgba(79, 70, 229, 0.05);
+  --engine-node-glow: 0 0 15px rgba(79, 70, 229, 0.2);
+  --packet-color: #4f46e5;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.08) 0%, transparent 50%);
+}
+.dark[data-theme="indigo-intelligence"] {
+  /* Dark Mode Colors & Tints */
+  --curr-surface: #020617; /* Very deep indigo */
+  --curr-surface-dim: #0f172a;
+  --color-accent: #6366f1;
+  --color-accent-soft: rgba(99, 102, 241, 0.15);
+  --color-theme-glow: rgba(99, 102, 241, 0.25);
+  --color-theme-particle: #818cf8;
+  --color-border: rgba(99, 102, 241, 0.3);
+  --bg-gradient: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  --card-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+  --engine-node-glow: 0 0 20px rgba(99, 102, 241, 0.4);
+  --packet-color: #818cf8;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+}
+
+/* 3. EMERALD ANALYST (Palantir/Bloomberg data analysis) */
+[data-theme="emerald-analyst"] {
+  /* Typography & Motion */
+  --theme-heading-weight: 600;
+  --theme-heading-spacing: -0.02em;
+  --theme-body-spacing: 0;
+  --theme-text-transform-heading: none;
+  --motion-speed-multiplier: 0.95;
+
+  /* Light Mode Colors & Tints */
+  --curr-surface: #F0FDF4; /* Soft green-tinted surface */
+  --curr-surface-dim: #DCFCE7;
+  --color-accent: #059669;
+  --color-accent-soft: rgba(5, 150, 105, 0.1);
+  --color-theme-glow: rgba(5, 150, 105, 0.15);
+  --color-theme-particle: #059669;
+  --color-border: rgba(5, 150, 105, 0.2);
+  --bg-gradient: linear-gradient(180deg, rgba(5, 150, 105, 0.05) 0%, transparent 100%), radial-gradient(circle at 50% 50%, rgba(5, 150, 105, 0.02) 0%, transparent 100%);
+  --card-shadow: 0 2px 10px rgba(5, 150, 105, 0.05);
+  --engine-node-glow: 0 0 16px rgba(5, 150, 105, 0.35);
+  --packet-color: #059669;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(5, 150, 105, 0.08) 0%, transparent 50%);
+}
+.dark[data-theme="emerald-analyst"] {
+  /* Dark Mode Colors & Tints */
+  --curr-surface: #022c22; /* Deep forest green */
+  --curr-surface-dim: #064e3b;
+  --color-accent: #10b981;
+  --color-accent-soft: rgba(16, 185, 129, 0.15);
+  --color-theme-glow: rgba(16, 185, 129, 0.25);
+  --color-theme-particle: #34d399;
+  --color-border: rgba(16, 185, 129, 0.3);
+  --bg-gradient: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%), radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+  --card-shadow: 0 4px 20px rgba(16, 185, 129, 0.1);
+  --engine-node-glow: 0 0 24px rgba(16, 185, 129, 0.45);
+  --packet-color: #34d399;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
+}
+
+/* 4. CRIMSON REAL-TIME (Threat Intelligence) */
+[data-theme="crimson-real-time"] {
+  /* Typography & Motion */
+  --theme-heading-weight: 700;
+  --theme-heading-spacing: -0.05em;
+  --theme-body-spacing: 0.01em;
+  --theme-text-transform-heading: none;
+  --motion-speed-multiplier: 1.3;
+
+  /* Light Mode Colors & Tints */
+  --curr-surface: #FEF2F2; /* Soft red tint */
+  --curr-surface-dim: #FEE2E2;
+  --color-accent: #dc2626;
+  --color-accent-soft: rgba(220, 38, 38, 0.1);
+  --color-theme-glow: rgba(220, 38, 38, 0.15);
+  --color-theme-particle: #dc2626;
+  --color-border: rgba(220, 38, 38, 0.2);
+  --bg-gradient: radial-gradient(ellipse at 50% 0%, rgba(220, 38, 38, 0.06) 0%, transparent 50%);
+  --card-shadow: 0 6px 24px rgba(220, 38, 38, 0.08);
+  --engine-node-glow: 0 0 20px rgba(220, 38, 38, 0.45);
+  --packet-color: #dc2626;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(220, 38, 38, 0.1) 0%, transparent 50%);
+}
+.dark[data-theme="crimson-real-time"] {
+  /* Dark Mode Colors & Tints */
+  --curr-surface: #450a0a; /* Very deep red */
+  --curr-surface-dim: #7f1d1d;
+  --color-accent: #ef4444;
+  --color-accent-soft: rgba(239, 68, 68, 0.15);
+  --color-theme-glow: rgba(239, 68, 68, 0.3);
+  --color-theme-particle: #f87171;
+  --color-border: rgba(239, 68, 68, 0.3);
+  --bg-gradient: radial-gradient(ellipse at 50% 0%, rgba(239, 68, 68, 0.15) 0%, transparent 60%);
+  --card-shadow: 0 8px 30px rgba(239, 68, 68, 0.15);
+  --engine-node-glow: 0 0 35px rgba(239, 68, 68, 0.65);
+  --packet-color: #f87171;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.2) 0%, transparent 60%);
+}
+
+/* 5. AMBER INSIGHT (Warm Editorial Knowledge) */
+[data-theme="amber-insight"] {
+  /* Typography & Motion */
+  --theme-heading-weight: 400;
+  --theme-heading-spacing: 0.02em;
+  --theme-body-spacing: 0.01em;
+  --theme-text-transform-heading: none;
+  --motion-speed-multiplier: 0.9;
+
+  /* Light Mode Colors & Tints */
+  --curr-surface: #FFFBEB; /* Soft amber/journal tint */
+  --curr-surface-dim: #FEF3C7;
+  --color-accent: #d97706;
+  --color-accent-soft: rgba(217, 119, 6, 0.1);
+  --color-theme-glow: rgba(217, 119, 6, 0.15);
+  --color-theme-particle: #d97706;
+  --color-border: rgba(217, 119, 6, 0.2);
+  --bg-gradient: radial-gradient(circle at 50% 0%, rgba(217, 119, 6, 0.05) 0%, transparent 60%);
+  --card-shadow: 0 4px 20px rgba(217, 119, 6, 0.05);
+  --engine-node-glow: 0 0 12px rgba(217, 119, 6, 0.2);
+  --packet-color: #d97706;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(217, 119, 6, 0.08) 0%, transparent 50%);
+}
+.dark[data-theme="amber-insight"] {
+  /* Dark Mode Colors & Tints */
+  --curr-surface: #451a03; /* Deep amber brown */
+  --curr-surface-dim: #78350f;
+  --color-accent: #f59e0b;
+  --color-accent-soft: rgba(245, 158, 11, 0.15);
+  --color-theme-glow: rgba(245, 158, 11, 0.25);
+  --color-theme-particle: #fbbf24;
+  --color-border: rgba(245, 158, 11, 0.3);
+  --bg-gradient: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+  --card-shadow: 0 8px 30px rgba(245, 158, 11, 0.12);
+  --engine-node-glow: 0 0 20px rgba(245, 158, 11, 0.4);
+  --packet-color: #fbbf24;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.15) 0%, transparent 60%);
+}
+
+/* 6. GOLDEN EXECUTIVE (Premium Financial Times luxury) */
+[data-theme="golden-executive"] {
+  /* Typography & Motion */
+  --theme-heading-weight: 700;
+  --theme-heading-spacing: 0.03em;
+  --theme-body-spacing: 0.015em;
+  --theme-text-transform-heading: uppercase;
+  --motion-speed-multiplier: 0.8;
+
+  /* Light Mode Colors & Tints */
+  --curr-surface: #FCFAF5; /* Warm ivory */
+  --curr-surface-dim: #F2ECE0;
+  --color-accent: #b89030;
+  --color-accent-soft: rgba(184, 144, 48, 0.1);
+  --color-theme-glow: rgba(184, 144, 48, 0.2);
+  --color-theme-particle: #b89030;
+  --color-border: rgba(184, 144, 48, 0.25);
+  --bg-gradient: radial-gradient(circle at 50% 0%, rgba(184, 144, 48, 0.08) 0%, transparent 80%);
+  --card-shadow: 0 10px 40px rgba(184, 144, 48, 0.08);
+  --engine-node-glow: 0 0 15px rgba(184, 144, 48, 0.3);
+  --packet-color: #b89030;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(184, 144, 48, 0.1) 0%, transparent 60%);
+}
+.dark[data-theme="golden-executive"] {
+  /* Dark Mode Colors & Tints */
+  --curr-surface: #121008; /* Deep rich warm black */
+  --curr-surface-dim: #1c180c;
+  --color-accent: #ffd700;
+  --color-accent-soft: rgba(255, 215, 0, 0.15);
+  --color-theme-glow: rgba(255, 215, 0, 0.3);
+  --color-theme-particle: #ffd700;
+  --color-border: rgba(255, 215, 0, 0.4);
+  --bg-gradient: radial-gradient(circle at 50% -10%, rgba(255, 215, 0, 0.15) 0%, transparent 80%);
+  --card-shadow: 0 12px 50px rgba(255, 215, 0, 0.15);
+  --engine-node-glow: 0 0 25px rgba(255, 215, 0, 0.4);
+  --packet-color: #ffd700;
+  --hero-glow: radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
+}
+
+/* ==========================================================================
+   GLOBAL STYLES
+   ========================================================================== */
 body {
   background-color: var(--color-surface);
   color: var(--color-text-main);
   font-family: var(--font-sans);
+  letter-spacing: var(--theme-body-spacing);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-weight: var(--theme-heading-weight);
+  letter-spacing: var(--theme-heading-spacing);
+  text-transform: var(--theme-text-transform-heading);
+  transition: font-weight 0.5s ease, letter-spacing 0.5s ease;
 }
 
 .gradient-text {
   background: none;
   color: var(--color-text-main);
   font-style: italic;
-  font-weight: 400;
+  font-weight: var(--theme-heading-weight);
   -webkit-text-fill-color: initial;
 }
 
@@ -79,24 +351,6 @@ body {
   border-radius: 0;
 }
 
-/* ── Search pulse — fires on section headings matched by search ──────────── */
-@keyframes search-pulse {
-  0%   { text-shadow: 0 0 0px rgba(26,26,26,0); }
-  30%  { text-shadow: 0 0 20px rgba(26,26,26,0.3); }
-  100% { text-shadow: 0 0 0px rgba(26,26,26,0); }
-}
-
-.dark @keyframes search-pulse {
-  0%   { text-shadow: 0 0 0px rgba(245,245,245,0); }
-  30%  { text-shadow: 0 0 20px rgba(245,245,245,0.35); }
-  100% { text-shadow: 0 0 0px rgba(245,245,245,0); }
-}
-
-.search-pulse {
-  animation: search-pulse 0.9s ease-out forwards;
-}
-
-/* ── Nav link hover underline (grows from center) ────────────────────────── */
 nav a {
   position: relative;
 }
@@ -116,4 +370,30 @@ nav a::after {
 nav a:hover::after {
   left: 0;
   right: 0;
+}
+
+.diagram-node {
+  position: absolute;
+  background-color: var(--curr-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main);
+  padding: 8px 16px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-radius: 4px;
+}
+
+.diagram-node--accent {
+  box-shadow: var(--engine-node-glow);
+  border-color: var(--color-accent);
 }

@@ -2,6 +2,13 @@ import '@testing-library/jest-dom';
 import React from 'react';
 import { vi, afterEach } from 'vitest';
 
+// Mock ResizeObserver for jsdom environment
+global.ResizeObserver = class ResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+};
+
 /**
  * Mock Firebase — all access goes through @/lib/firebase per conventions.
  * Components must never import Firebase directly; this mock mirrors the

@@ -4,6 +4,7 @@
  * and handles graceful shutdown for Cloud Run.
  */
 
+import './env';
 import path from 'path';
 import express from 'express';
 import helmet from 'helmet';
@@ -18,10 +19,14 @@ import cronRouter from './cron';
 
 // ─── Firebase Admin Initialisation ───────────────────────────────────────────
 
-const serviceAccount = JSON.parse(
-  process.env['GOOGLE_APPLICATION_CREDENTIALS_JSON'] ?? '{}'
-);
-initializeApp({ credential: cert(serviceAccount) });
+const serviceAccountString = process.env['GOOGLE_APPLICATION_CREDENTIALS_JSON'];
+if (serviceAccountString) {
+  const serviceAccount = JSON.parse(serviceAccountString);
+  initializeApp({ credential: cert(serviceAccount) });
+} else {
+  // Fallback to default application credentials or mock for local dev
+  initializeApp();
+}
 
 // ─── App Setup ────────────────────────────────────────────────────────────────
 
@@ -52,23 +57,29 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/digest', digestRouter);
 app.get('/api/briefing/latest', handleLatestBriefing);
 app.get('/api/briefing/domains', handleDomainsBriefing);
+import { handleStatsBriefing } from './routes/stats';
+app.get('/api/briefing/stats', handleStatsBriefing);
 app.use('/api/topics', topicsRouter);
 app.use('/api/cron', cronRouter);
 
-// ─── 404 for unknown API routes ───────────────────────────────────────────────
-
-app.use('/api/*path', (_req, res) => {
-  res.status(404).json(errorResponse('API route not found'));
-});
-
-// ─── Static Files (production only) ──────────────────────────────────────────
+// ─── Static Files & SPA Fallback ──────────────────────────────────────────────
 
 if (IS_PRODUCTION) {
   const distPath = path.join(__dirname, '../dist');
   app.use(express.static(distPath));
+}
 
-  // SPA fallback — must come after all /api/* handlers
-  app.get('*path', (_req, res) => {
+// ─── 404 for unknown API routes ───────────────────────────────────────────────
+
+app.use('/api', (_req, res) => {
+  res.status(404).json(errorResponse('API route not found'));
+});
+
+// ─── SPA fallback ─────────────────────────────────────────────────────────────
+
+if (IS_PRODUCTION) {
+  const distPath = path.join(__dirname, '../dist');
+  app.use((_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }

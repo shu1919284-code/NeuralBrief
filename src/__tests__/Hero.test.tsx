@@ -23,7 +23,7 @@ const { Hero } = await import('@/components/Hero');
 
 describe('Hero', () => {
   it('renders headlines, description, and stats correctly', () => {
-    render(<Hero />);
+    render(<Hero briefingData={null} loadingBriefing={false} />);
 
     // Headlines
     expect(screen.getByText(/hero.headline/i)).toBeInTheDocument();
@@ -32,15 +32,14 @@ describe('Hero', () => {
     // Description
     expect(screen.getByText(/hero.description/i)).toBeInTheDocument();
 
-    // Scroll to CTA link
-    const ctaLink = screen.getByRole('link', { name: /Subscribe to Weekly Digest/i });
-    expect(ctaLink).toBeInTheDocument();
-    expect(ctaLink).toHaveAttribute('href', '#cta');
+    // Scroll to process link
+    const processLink = screen.getByRole('link', { name: /hero.ctaSecondary/i });
+    expect(processLink).toBeInTheDocument();
+    expect(processLink).toHaveAttribute('href', '#process');
 
     // Stats
-    expect(screen.getByText(/15\+/i)).toBeInTheDocument();
-    expect(screen.getByText(/05:00/i)).toBeInTheDocument();
-    expect(screen.getByText(/0%/i)).toBeInTheDocument();
+    expect(screen.getByText(/hero.trustMetrics/i)).toBeInTheDocument();
+    expect(screen.getByText(/hero.trustSources/i)).toBeInTheDocument();
   });
 
   it('scrolls to CTA section when link is clicked', () => {
@@ -52,12 +51,12 @@ describe('Hero', () => {
 
     const spyGetElementById = vi.spyOn(document, 'getElementById').mockReturnValue(mockCtaElement);
 
-    render(<Hero />);
-    const ctaLink = screen.getByRole('link', { name: /Subscribe to Weekly Digest/i });
+    render(<Hero briefingData={null} loadingBriefing={false} />);
+    const processLink = screen.getByRole('link', { name: /hero.ctaSecondary/i });
     
-    fireEvent.click(ctaLink);
+    fireEvent.click(processLink);
 
-    expect(spyGetElementById).toHaveBeenCalledWith('cta');
+    expect(spyGetElementById).toHaveBeenCalledWith('process');
     expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
 
     spyGetElementById.mockRestore();

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type Language = 'en' | 'es' | 'fr' | 'hi' | 'zh' | 'ko';
+type Language = 'en' | 'es' | 'fr' | 'hi' | 'zh' | 'ko' | 'hg' | 'de' | 'ja' | 'it' | 'pt' | 'ru' | 'ar' | 'nl';
 
 /** Flat dot-notation translation map for a single language. */
 type TranslationMap = Record<string, string>;
@@ -155,6 +155,121 @@ const en: TranslationMap = {
   'faq_title_1': 'Frequently Asked',
   'faq_title_2': 'Questions',
   'reading_time': 'min read',
+  'cta_success_heading': 'Success!',
+  'cta_success_desc': 'You have successfully subscribed to the briefing.',
+  'cta_error_invalid_email': 'Please enter a valid email address.',
+  'engine_consensus_building': 'Building Consensus',
+  'engine_consensus_reached': 'Consensus Reached',
+  'engine_sources': 'Sources',
+  'engine_signals': 'Signals',
+  'engine_confidence': 'Confidence',
+  'engine_latency': 'Latency',
+  'engine_status': 'Status',
+  'engine_active': 'Active',
+  'engine_standby': 'Standby',
+  'engine_task': 'Task',
+  'engine_idle': 'Idle',
+  'engine_queue': 'Queue',
+  'focus_weekly_sync': 'Weekly Sync',
+  'profile.loading': 'Loading profile...',
+  'focus_read_report': 'Read Full Report',
+  'focus_failed_live_feed': 'Failed to load live feed.',
+  'footer_sound': 'Sound',
+  'footer_sound_on': 'On',
+  'footer_sound_off': 'Off',
+  'hero.badge': 'NeuralBrief 2.0 / Now Live',
+  'hero.title_1': 'Intelligence',
+  'hero.title_2': 'Without',
+  'hero.title_3': 'The Noise.',
+  'hero.desc': 'Our agents continuously monitor, filter, and synthesize the technical web. You get a personalized briefing of only what matters.',
+  'hero.ctaPrimary': 'Start Free',
+  'hero.ctaSecondary': 'View Example',
+  'hero.trustMetrics': 'Used by 10,000+ engineers',
+  'hero.trustSources': 'Monitoring 500+ sources',
+  'how_step1_title': 'Ingestion',
+  'how_step1_desc': 'We continuously aggregate data across thousands of cutting-edge tech blogs, academic journals, open-source repositories, and developer forums, ensuring no crucial signal goes unnoticed.',
+  'how_step2_title': 'Filtering',
+  'how_step2_desc': 'Our proprietary AI models aggressively filter out marketing fluff, clickbait, and duplicated content, leaving only the high-value technical substance you actually care about.',
+  'how_step3_title': 'Synthesis',
+  'how_step3_desc': 'Advanced agentic frameworks analyze and connect the dots across multiple sources to synthesize deep, actionable insights and core technical takeaways.',
+  'how_step4_title': 'Delivery',
+  'how_step4_desc': 'You receive a beautifully formatted, hyper-personalized intelligence digest directly to your inbox or via our dashboard, optimized for rapid comprehension.',
+  'how_overline': 'How It Works',
+  'how_desc': 'A transparent look at our autonomous intelligence pipeline.',
+  'how_metrics_volume': '1.2M+',
+  'how_metrics_volume_label': 'Signals Processed Daily',
+  'how_metrics_noise': '99.8%',
+  'how_metrics_noise_label': 'Noise Reduction',
+  'how_metrics_time': '<12ms',
+  'how_metrics_time_label': 'Avg Processing Time',
+  'how_visual_insight': 'Visual Insight',
+  'nav_search_try': 'Try searching for "LLM architecture"',
+  'onboarding_welcome_back': 'Welcome Back',
+  'onboarding_welcome_title': 'Welcome to NeuralBrief',
+  'onboarding_welcome_desc': 'Let\'s set up your personalized intelligence feed.',
+  'onboarding_welcome_start': 'Get Started',
+  'onboarding_skip': 'Skip Onboarding',
+  'onboarding_role_title': 'What is your role?',
+  'onboarding_role_desc': 'This helps us tune the technical depth of your briefing.',
+  'onboarding_skip_short': 'Skip',
+  'onboarding_continue': 'Continue',
+  'onboarding_intent_title': 'What are your goals?',
+  'onboarding_intent_desc': 'Select what you want to achieve with NeuralBrief.',
+  'onboarding_back': 'Back',
+  'onboarding_referral_title': 'How did you hear about us?',
+  'onboarding_referral_desc': 'We appreciate your feedback.',
+  'onboarding_saving': 'Saving profile...',
+  'onboarding_done': 'Done',
+  'onboarding_done_title': 'You\'re all set!',
+  'onboarding_done_desc': 'Your personalized briefing is ready.',
+  'topic_openai': 'OpenAI',
+  'topic_gemini': 'Gemini',
+  'topic_claude': 'Claude',
+  'topic_robotics': 'Robotics',
+  'topic_startups': 'Startups',
+  'personalize_overline': 'Personalization Engine',
+  'personalize_headline_1': 'Build Your Own',
+  'personalize_headline_2': 'AI Briefing',
+  'personalize_desc': 'You control the signal. Select your focus areas and preferred language, and our agents will tailor a feed specifically for your workflow.',
+  'personalize_topics': 'Focus Areas',
+  'selected': 'Selected',
+  'personalize_language': 'Output Language',
+  'system_status': 'System Status',
+  'personalize_feedback_some': 'NeuralBrief is adapting your feed to prioritize these signals.',
+  'personalize_feedback_none': 'Select focus areas to customize your feed.',
+  'personalize_relevance': 'Briefing Relevance',
+  'confidence': 'Confidence',
+  'preview_update': 'Live Update',
+  'preview_read_full_doc': 'Read Full Document',
+  'preview_failed': 'Failed to load preview.',
+  'preview_inbound_stream': 'Inbound Stream',
+  'preview_core_engine': 'Core Engine',
+  'preview_latest_intel': 'Latest Intel',
+
+  'engine_card1_title': "Ingestion",
+  'engine_card1_desc': "Real-time monitoring of ArXiv, GitHub, and RSS.",
+  'engine_card2_title': "Evaluation",
+  'engine_card2_desc': "Deduplication and vector relevance scoring.",
+  'engine_card3_title': "Synthesis",
+  'engine_card3_desc': "Consensus modeling for technical abstraction.",
+  'engine_card4_title': "Delivery",
+  'engine_card4_desc': "Final dispatch via low-latency SMTP.",
+  'engine_node_ingestion_title': "Ingestion",
+  'engine_node_logicGate_title': "Logic Gate",
+  'engine_node_llama_title': "Llama 3",
+  'engine_node_mistral_title': "Mistral",
+  'engine_node_groq_title': "Groq",
+  'engine_node_dispatch_title': "Dispatch",
+  'how_title_1': "How We",
+  'how_title_2': "Work",
+  'preview_tab_all': "All Signals",
+  'preview_tab_research': "Research Core",
+  'preview_tab_agentic': "Agentic Ops",
+  'focus_last_sync': "Last Sync",
+  'footer_stay_ahead': "Stay Ahead.",
+  'footer_no_noise': "No Noise.",
+  'footer_see_tomorrow': "See you tomorrow.",
+
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -824,7 +939,8 @@ const ko: TranslationMap = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DICTIONARIES: Record<Language, TranslationMap> = { en, es, fr, hi, zh, ko };
+const hg={...en};const de={...en};const ja={...en};const it={...en};const pt={...en};const ru={...en};const ar={...en};const nl={...en};
+const DICTIONARIES: Record<Language, TranslationMap> = { en, es, fr, hi, zh, ko, hg, de, ja, it, pt, ru, ar, nl };
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -842,7 +958,7 @@ export function LanguageProvider({ children }: { children: ReactNode }): React.J
    * Falls back to the key itself when a translation is missing so the UI
    * always renders something meaningful.
    */
-  const t = (key: string): string => DICTIONARIES[language][key] ?? key;
+  const t = (key: string): string => DICTIONARIES[language]?.[key] || key;
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

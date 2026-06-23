@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { useTheme } from '../contexts/ThemeContext';
 
 /**
  * Full-viewport WebGL neural-network canvas (Three.js upgrade).
@@ -16,16 +17,30 @@ import * as THREE from 'three';
  */
 export function NeuralCanvas(): React.JSX.Element {
   const mountRef = useRef<HTMLDivElement>(null);
+  const { theme, mode } = useTheme();
+  const matsRef = useRef<{ nodes: THREE.MeshBasicMaterial[], line: THREE.LineBasicMaterial } | null>(null);
+
+function getCanvasConfig(theme: string) {
+  switch (theme) {
+    case 'indigo-intelligence': return { nodeCount: 80,  connectDist: 16, speedMult: 1.2 };
+    case 'golden-executive':    return { nodeCount: 25,  connectDist: 35, speedMult: 0.3 };
+    case 'emerald-analyst':     return { nodeCount: 60,  connectDist: 20, speedMult: 1.0 };
+    case 'crimson-real-time':   return { nodeCount: 50,  connectDist: 25, speedMult: 1.8 };
+    case 'amber-insight':       return { nodeCount: 35,  connectDist: 26, speedMult: 0.5 };
+    default:                    return { nodeCount: 45,  connectDist: 22, speedMult: 1.0 };
+  }
+}
 
   useEffect((): (() => void) => {
     const mount = mountRef.current;
     if (!mount) return (): void => undefined;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const config = getCanvasConfig(theme);
 
     // ── Renderer ────────────────────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0);
     mount.appendChild(renderer.domElement);
@@ -41,9 +56,9 @@ export function NeuralCanvas(): React.JSX.Element {
     camera.position.z = 90;
 
     // ── Nodes (small dark spheres) ───────────────────────────────────────────
-    const NODE_COUNT = 70;
+    const NODE_COUNT = config.nodeCount;
     const SPREAD = 65;
-    const CONNECT_DIST = 22;
+    const CONNECT_DIST = config.connectDist;
 
     type NodeData = { mesh: THREE.Mesh; vel: THREE.Vector3 };
 
@@ -51,8 +66,10 @@ export function NeuralCanvas(): React.JSX.Element {
     const nodeMats: THREE.MeshBasicMaterial[] = [];
     const nodes: NodeData[] = [];
 
+    // Initial color grab
+    const initialRaw = getComputedStyle(document.documentElement).getPropertyValue('--color-theme-particle').trim();
     const isDarkInit = document.documentElement.classList.contains('dark');
-    const initColor = isDarkInit ? 0xf5f5f5 : 0x1a1a1a;
+    const initColor = initialRaw ? new THREE.Color(initialRaw) : new THREE.Color(isDarkInit ? 0xf5f5f5 : 0x1a1a1a);
 
     for (let i = 0; i < NODE_COUNT; i++) {
       const mat = new THREE.MeshBasicMaterial({
@@ -73,9 +90,9 @@ export function NeuralCanvas(): React.JSX.Element {
       nodes.push({
         mesh,
         vel: new THREE.Vector3(
-          (Math.random() - 0.5) * 0.033,
-          (Math.random() - 0.5) * 0.033,
-          (Math.random() - 0.5) * 0.016,
+          (Math.random() - 0.5) * 0.033 * config.speedMult,
+          (Math.random() - 0.5) * 0.033 * config.speedMult,
+          (Math.random() - 0.5) * 0.016 * config.speedMult,
         ),
       });
     }
@@ -95,6 +112,9 @@ export function NeuralCanvas(): React.JSX.Element {
       opacity: isDarkInit ? 0.04 : 0.07,
     });
     scene.add(new THREE.LineSegments(lineGeo, lineMat));
+
+    // Expose mats for theme updates
+    matsRef.current = { nodes: nodeMats, line: lineMat };
 
     // ── Mouse parallax ───────────────────────────────────────────────────────
     let targetRotX = 0;
@@ -122,20 +142,6 @@ export function NeuralCanvas(): React.JSX.Element {
       rafId = requestAnimationFrame(tick);
 
       if (!reduced) {
-        // Dynamic theme adaptation for WebGL colors
-        const isDark = document.documentElement.classList.contains('dark');
-        const currentColor = isDark ? 0xf5f5f5 : 0x1a1a1a;
-        
-        nodeMats.forEach((m) => {
-          if (m.color.getHex() !== currentColor) {
-            m.color.setHex(currentColor);
-          }
-        });
-        if (lineMat.color.getHex() !== currentColor) {
-          lineMat.color.setHex(currentColor);
-          lineMat.opacity = isDark ? 0.04 : 0.07;
-        }
-
         // Drift nodes, bounce off invisible walls
         nodes.forEach(({ mesh, vel }) => {
           mesh.position.add(vel);
@@ -182,7 +188,26 @@ export function NeuralCanvas(): React.JSX.Element {
       renderer.dispose();
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [theme]);
+
+  useEffect(() => {
+    if (!matsRef.current) return;
+    
+    // We wait for the next tick to ensure CSS variables are applied to DOM
+    const timer = setTimeout(() => {
+      const rawColor = getComputedStyle(document.documentElement).getPropertyValue('--color-theme-particle').trim();
+      if (!rawColor) return;
+      
+      const isDark = document.documentElement.classList.contains('dark');
+      const color = new THREE.Color(rawColor);
+      
+      matsRef.current!.nodes.forEach(m => m.color.copy(color));
+      matsRef.current!.line.color.copy(color);
+      matsRef.current!.line.opacity = isDark ? 0.04 : 0.07;
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [theme, mode]);
 
   return (
     <div

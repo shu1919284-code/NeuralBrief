@@ -12,7 +12,7 @@ export async function getAllActiveUsers(): Promise<UserDigestConfig[]> {
     const db = getFirestore();
     const snapshot = await db
       .collection('users')
-      .where('digestFrequency', '!=', 'none')
+      .where('digestFrequency', 'in', ['daily', 'weekly'])
       .get();
 
     if (snapshot.empty) {
