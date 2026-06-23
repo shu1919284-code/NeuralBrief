@@ -10,6 +10,7 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import pLimit from 'p-limit';
 
 import { authMiddleware } from '../middleware/auth';
 import type { RequestWithUser } from '../middleware/auth';
@@ -57,16 +58,32 @@ const saveFileCache = () => {
 loadFileCache();
 
 /**
- * Resolve the API key for a given section using the fallback chain:
- *   section-specific key → backup1 → backup2 → main fallback
+ * Resolve the API key for a given section.
+ * If the specific key is missing, it round-robins through available backup keys.
  */
+let fallbackIndex = 0;
+
 const resolveApiKey = (sectionEnvVar: string): string | undefined => {
-  return (
-    process.env[sectionEnvVar] ||
-    process.env.GROQ_API_KEY_BACKUP_1 ||
-    process.env.GROQ_API_KEY_BACKUP_2 ||
+  if (process.env[sectionEnvVar]) {
+    return process.env[sectionEnvVar];
+  }
+
+  // Collect all available fallback keys
+  const fallbacks = [
+    process.env.GROQ_API_KEY_BACKUP_1,
+    process.env.GROQ_API_KEY_BACKUP_2,
+    process.env.GROQ_API_KEY_BACKUP_3,
+    process.env.GROQ_API_KEY_BACKUP_4,
+    process.env.GROQ_API_KEY_BACKUP_5,
     process.env.GROQ_API_KEY
-  );
+  ].filter(Boolean) as string[];
+
+  if (fallbacks.length === 0) return undefined;
+
+  // Round-robin selection
+  const key = fallbacks[fallbackIndex % fallbacks.length];
+  fallbackIndex++;
+  return key;
 };
 
 const getCachedBriefing = async (key: string): Promise<any | null> => {
@@ -426,11 +443,12 @@ export const handleDomainsBriefing = async (req: any, res: Response): Promise<vo
       }
     }
 
-    logger.info('Fetching all 8 domain briefings in parallel');
+    logger.info('Fetching all 8 domain briefings in parallel (concurrency limited to 2)');
 
-    // Fetch all 8 domains in parallel — each uses its own API key
+    // Fetch domains with concurrency limit to prevent rate limits
+    const limit = pLimit(2);
     const domainResults = await Promise.allSettled(
-      DOMAIN_CONFIGS.map(config => fetchDomainBriefing(config))
+      DOMAIN_CONFIGS.map(config => limit(() => fetchDomainBriefing(config)))
     );
 
     const domains: any[] = [];
