@@ -57,15 +57,36 @@ const saveFileCache = () => {
 // Initial load
 loadFileCache();
 
+export interface LLMConfig {
+  apiKey: string;
+  url: string;
+  model: string;
+}
+
+const buildLLMConfig = (key: string): LLMConfig => {
+  if (key.startsWith('sk-or')) {
+    return {
+      apiKey: key,
+      url: 'https://openrouter.ai/api/v1/chat/completions',
+      model: 'meta-llama/llama-3.3-70b-instruct'
+    };
+  }
+  return {
+    apiKey: key,
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.3-70b-versatile'
+  };
+};
+
 /**
- * Resolve the API key for a given section.
- * If the specific key is missing, it round-robins through available backup keys.
+ * Resolve the API config for a given section.
+ * If the specific key is missing, it divides backup keys among 2 domains each.
  */
 let fallbackIndex = 0;
 
-const resolveApiKey = (sectionEnvVar: string): string | undefined => {
+const resolveApiKey = (sectionEnvVar: string): LLMConfig | undefined => {
   if (process.env[sectionEnvVar]) {
-    return process.env[sectionEnvVar];
+    return buildLLMConfig(process.env[sectionEnvVar]);
   }
 
   // Collect all available fallback keys
@@ -75,15 +96,19 @@ const resolveApiKey = (sectionEnvVar: string): string | undefined => {
     process.env.GROQ_API_KEY_BACKUP_3,
     process.env.GROQ_API_KEY_BACKUP_4,
     process.env.GROQ_API_KEY_BACKUP_5,
+    process.env.OPENROUTER_API_KEY_BACKUP_1,
+    process.env.OPENROUTER_API_KEY_BACKUP_2,
     process.env.GROQ_API_KEY
   ].filter(Boolean) as string[];
 
   if (fallbacks.length === 0) return undefined;
 
-  // Round-robin selection
-  const key = fallbacks[fallbackIndex % fallbacks.length];
+  // Use each backup key for exactly 2 domains
+  const keyIndex = Math.floor(fallbackIndex / 2) % fallbacks.length;
+  const key = fallbacks[keyIndex];
   fallbackIndex++;
-  return key;
+  
+  return buildLLMConfig(key);
 };
 
 const getCachedBriefing = async (key: string): Promise<any | null> => {
@@ -212,7 +237,7 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
       logger.warn('Failed to fetch real-time items for latest briefing. Using knowledge base fallback.', { error: String(err) });
     }
 
-    const articlesPromptInput = items.slice(0, 10).map(item => {
+    const articlesPromptInput = items.map(item => {
       const bulletText = item.changelogEntries && item.changelogEntries.length > 0 
         ? '\nChangelog/Release Entries:\n' + item.changelogEntries.map((e: string) => `- ${e}`).join('\n')
         : '';
@@ -250,28 +275,33 @@ Schema:
   ]
 }`;
 
+    const requestPayload: any = {
+      model: llmConfig.model,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        {
+          role: 'user',
+          content: `Analyze these recent developments and summarize the most significant AI model release, framework breakthrough, or foundation model research paper from the last 7 days. Provide a deep technical analysis.\n\nRecent Articles:\n${articlesPromptInput || 'No recent articles available.'}`
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 2200,
+    };
+    
+    // Only groq strictly requires json_object type format flag consistently, but Llama-3-70b-instruct on OpenRouter supports it well enough
+    requestPayload.response_format = { type: 'json_object' };
+
     const response = await axios.post(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: `Analyze these recent developments and summarize the most significant AI model release, framework breakthrough, or foundation model research paper from the last 7 days. Provide a deep technical analysis.\n\nRecent Articles:\n${articlesPromptInput || 'No recent articles available.'}`
-          }
-        ],
-        temperature: 0.3,
-        max_tokens: 2200,
-        response_format: { type: 'json_object' }
-      },
+      llmConfig.url,
+      requestPayload,
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Authorization': `Bearer ${llmConfig.apiKey}`,
+          ...(llmConfig.url.includes('openrouter') ? { 'HTTP-Referer': 'https://neuralbrief.app', 'X-Title': 'NeuralBrief' } : {})
         }
       }
     );
@@ -326,12 +356,12 @@ const DOMAIN_CONFIGS: DomainConfig[] = [
  * Falls back through GROQ_API_KEY_BACKUP_1 → GROQ_API_KEY_BACKUP_2 → GROQ_API_KEY.
  */
 const fetchDomainBriefing = async (config: DomainConfig): Promise<any> => {
-  const apiKey = resolveApiKey(config.envKey);
-  if (!apiKey) {
+  const llmConfig = resolveApiKey(config.envKey);
+  if (!llmConfig) {
     throw new Error(`No API key available for domain: ${config.id}`);
   }
 
-  logger.info(`Fetching domain briefing for ${config.id} using key env: ${config.envKey}`);
+  logger.info(`Fetching domain briefing for ${config.id} using key env: ${config.envKey} (URL: ${llmConfig.url})`);
 
   // Fetch real-time articles for the specific domain
   const topicId = mapConfigIdToTopicId(config.id);
@@ -382,25 +412,28 @@ Schema:
   ]
 }`;
 
+  const requestPayload: any = {
+    model: llmConfig.model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      {
+        role: 'user',
+        content: `Analyze these recent developments in ${config.title} from the last 7 days and provide the grounded technical report.\n\nRecent Articles:\n${articlesPromptInput || 'No recent articles available.'}`
+      }
+    ],
+    temperature: 0.3,
+    max_tokens: 2200,
+    response_format: { type: 'json_object' }
+  };
+
   const response = await axios.post(
-    'https://api.groq.com/openai/v1/chat/completions',
-    {
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: `Analyze these recent developments in ${config.title} from the last 7 days and provide the grounded technical report.\n\nRecent Articles:\n${articlesPromptInput || 'No recent articles available.'}`
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 2200,
-      response_format: { type: 'json_object' }
-    },
+    llmConfig.url,
+    requestPayload,
     {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${llmConfig.apiKey}`,
+        ...(llmConfig.url.includes('openrouter') ? { 'HTTP-Referer': 'https://neuralbrief.app', 'X-Title': 'NeuralBrief' } : {})
       }
     }
   );
