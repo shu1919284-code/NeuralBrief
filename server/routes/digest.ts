@@ -222,9 +222,9 @@ export const handleLatestBriefing = async (req: any, res: Response): Promise<voi
       }
     }
 
-    const apiKey = resolveApiKey('GROQ_API_KEY_LATEST');
-    if (!apiKey) {
-      res.status(500).json({ error: 'No Groq API key configured. Set GROQ_API_KEY_LATEST or GROQ_API_KEY.' });
+    const llmConfig = resolveApiKey('GROQ_API_KEY_LATEST');
+    if (!llmConfig) {
+      res.status(500).json({ error: 'No API key available for latest briefing' });
       return;
     }
 
