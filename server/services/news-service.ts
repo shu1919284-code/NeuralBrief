@@ -68,7 +68,11 @@ function extractSnippet(raw: unknown): string {
   }
 
   // Strip HTML tags for clean plain-text snippets
-  const stripped = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  let stripped = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  
+  // Strip ArXiv boilerplate: "arXiv:2606.23927v1 Announce Type: new Abstract: "
+  stripped = stripped.replace(/^arXiv:.*?(?:Abstract:\s*)/i, '').trim();
+
   return truncate(stripped, SNIPPET_MAX_LENGTH);
 }
 
@@ -268,10 +272,9 @@ interface HNResponse {
 export async function fetchHackerNews(topicIds: string[]): Promise<NewsItem[]> {
   try {
     const topics = getTopicsByIds(topicIds);
-    const query = topics
-      .flatMap((t) => t.searchTerms)
-      .slice(0, 5) // keep URL short
-      .join(' ');
+    // Use the first search term of the first topic, or fallback to 'AI'
+    // Joining all terms with spaces causes an overly restrictive AND query in Algolia.
+    const query = topics[0]?.searchTerms[0] || 'AI';
 
     const [popularResponse, latestResponse] = await Promise.all([
       axios.get<HNResponse>('https://hn.algolia.com/api/v1/search', {
@@ -313,6 +316,22 @@ export async function fetchHackerNews(topicIds: string[]): Promise<NewsItem[]> {
       ...processHits(popularResponse.data.hits, 'popular'),
       ...processHits(latestResponse.data.hits, 'latest')
     ];
+
+    // Concurrently fetch missing snippets by grabbing OpenGraph metadata from the URLs
+    await Promise.all(items.map(async (item) => {
+      if (!item.snippet) {
+        try {
+          const res = await axios.get(item.url, { timeout: 3000, headers: { 'User-Agent': 'NeuralBrief/1.0 (+https://neuralbrief.app)' } });
+          const $page = cheerio.load(res.data);
+          const ogDesc = $page('meta[property="og:description"]').attr('content') || $page('meta[name="description"]').attr('content');
+          if (ogDesc && ogDesc.trim()) {
+            item.snippet = truncate(ogDesc.trim(), SNIPPET_MAX_LENGTH);
+          }
+        } catch (e) {
+          // Ignore fetch errors, fallback to empty snippet
+        }
+      }
+    }));
 
     logger.info('Hacker News fetch complete', { count: items.length });
     return items;
@@ -365,17 +384,34 @@ export async function fetchGitHubTrending(language?: string): Promise<NewsItem[]
       const starsSuffix = starsText ? ` · ⭐ ${starsText} stars` : '';
       const langSuffix = repoLanguage ? ` · ${repoLanguage}` : '';
 
+      // We'll classify all GitHub trending generally under programming or tools
       items.push({
         id: nanoid(),
         title: `${repoName}${langSuffix}${starsSuffix}`,
         url: repoUrl,
         source: 'GitHub Trending',
-        topic: 'programming',
-        publishedAt: new Date().toISOString(),
+        topic: 'tools_libraries',
+        publishedAt: new Date().toISOString(), // No timestamp on trending page
         snippet,
-        fetchType: 'latest'
+        fetchType: 'latest',
       });
     });
+
+    // Enhance snippets with README text if the original repo description is too short
+    await Promise.all(items.map(async (item) => {
+      if (item.snippet.length < 60) {
+        try {
+          const res = await axios.get(item.url, { timeout: 3000, headers: { 'User-Agent': 'NeuralBrief/1.0 (+https://neuralbrief.app)' } });
+          const $repo = cheerio.load(res.data);
+          const firstP = $repo('article.markdown-body p').filter((_, p) => $repo(p).text().trim().length > 30).first().text().trim();
+          if (firstP) {
+            item.snippet = truncate(firstP, SNIPPET_MAX_LENGTH);
+          }
+        } catch (e) {
+          // Ignore fetch errors
+        }
+      }
+    }));
 
     logger.info('GitHub Trending fetch complete', { count: items.length });
     return items;

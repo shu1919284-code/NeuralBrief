@@ -18,6 +18,73 @@ const getApiUrl = (path: string) => {
   return isLocal ? `http://localhost:3001${path}` : `https://neuralbrief-production.up.railway.app${path}`;
 };
 
+function ScraperVisualizer() {
+  const messages = [
+    'Establishing secure connection...',
+    'Locating target DOM nodes...',
+    'Extracting raw signals...',
+    'Parsing OpenGraph metadata...',
+    'Bypassing basic rate limits...',
+    'Aggregating final data...',
+  ];
+  
+  const [msgIndex, setMsgIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIndex((prev) => (prev + 1) % messages.length);
+    }, 800);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className='flex flex-col items-center justify-center h-64 border border-border-subtle p-8 bg-surface-dim/20 relative overflow-hidden'>
+      {/* Scanning laser effect */}
+      <motion.div 
+        animate={{ top: ['-10%', '110%'] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+        className='absolute left-0 right-0 h-1 bg-text-main/20 blur-[2px]'
+      />
+      
+      {/* Central icon */}
+      <motion.div
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+        className='w-12 h-12 border border-text-main/40 rounded-full flex items-center justify-center mb-6'
+      >
+        <div className='w-2 h-2 bg-text-main rounded-full'></div>
+      </motion.div>
+
+      {/* Dynamic text */}
+      <div className='h-6 overflow-hidden'>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={msgIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className='font-mono text-xs uppercase tracking-[0.2em] text-text-main font-bold'
+          >
+            {messages[msgIndex]}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      
+      <div className='mt-4 flex gap-1'>
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={`dot-${i}`}
+            animate={{ opacity: [0.2, 1, 0.2] }}
+            transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+            className='w-1 h-1 bg-text-main rounded-full'
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function RawNewsFeed() {
   const { t } = useLanguage();
   const [activeDomain, setActiveDomain] = useState(DOMAINS[0].id);
@@ -108,9 +175,7 @@ export function RawNewsFeed() {
       {/* Feed Content */}
       <div className='min-h-[400px]'>
         {loading ? (
-          <div className='flex justify-center items-center h-40'>
-            <div className='w-6 h-6 border-2 border-text-main border-t-transparent rounded-full animate-spin'></div>
-          </div>
+          <ScraperVisualizer />
         ) : error ? (
           <div className='text-center text-rose-500 font-mono text-sm'>{error}</div>
         ) : displayedItems.length === 0 ? (
@@ -144,7 +209,7 @@ export function RawNewsFeed() {
                     {item.title}
                   </h3>
                   <p className='text-sm text-text-muted line-clamp-3 leading-relaxed'>
-                    {item.snippet || 'No summary available.'}
+                    {item.snippet || 'Click to explore the full text and discussion on the source website.'}
                   </p>
                 </motion.a>
               ))}

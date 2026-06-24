@@ -13,7 +13,7 @@ import { initializeApp, cert } from 'firebase-admin/app';
 
 import { logger, requestLogger } from './utils/logger';
 import { AppError, errorResponse, successResponse } from './types';
-import digestRouter, { handleLatestBriefing, handleDomainsBriefing } from './routes/digest';
+import digestRouter, { handleLatestBriefing, handleDomainsBriefing, handleRawNewsBriefing } from './routes/digest';
 import topicsRouter from './routes/topics';
 import cronRouter from './cron';
 
@@ -57,6 +57,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/digest', digestRouter);
 app.get('/api/briefing/latest', handleLatestBriefing);
 app.get('/api/briefing/domains', handleDomainsBriefing);
+app.get('/api/briefing/raw-news', handleRawNewsBriefing);
 import { handleStatsBriefing } from './routes/stats';
 app.get('/api/briefing/stats', handleStatsBriefing);
 app.use('/api/topics', topicsRouter);

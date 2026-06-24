@@ -172,7 +172,11 @@ export const SOURCES: NewsSource[] = [
     name: 'Hacker News',
     type: 'api',
     url: 'https://hn.algolia.com/api/v1/search',
-    topicIds: ['programming', 'devops', 'mlops', 'tools_libraries'],
+    topicIds: [
+      'ai', 'ai_research', 'ai-companies', 'openai', 'anthropic', 'google-deepmind',
+      'cloud', 'security', 'devops', 'programming', 'data_science', 'machine_learning',
+      'agentic_ai', 'mlops', 'model_releases', 'ai_industry', 'tools_libraries'
+    ],
     reliability: 0.75,
     maxItemsPerFetch: 20,
   },

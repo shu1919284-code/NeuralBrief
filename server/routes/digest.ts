@@ -715,8 +715,7 @@ router.post('/trigger', async (req, res: Response): Promise<void> => {
   }
 });
 
-// ─── GET /api/briefing/raw-news ────────────────────────────────────────────────
-router.get('/raw-news', async (req: any, res: Response): Promise<void> => {
+export const handleRawNewsBriefing = async (req: any, res: Response): Promise<void> => {
   try {
     const domainId = req.query.domainId as string;
     if (!domainId) {
@@ -739,6 +738,6 @@ router.get('/raw-news', async (req: any, res: Response): Promise<void> => {
     logger.error('Failed to fetch raw news', { error: String(err) });
     res.status(500).json({ error: String(err) });
   }
-});
+};
 
 export default router;
