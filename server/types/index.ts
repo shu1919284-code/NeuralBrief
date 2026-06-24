@@ -32,6 +32,7 @@ export interface NewsItem {
   publishedAt: string; // ISO 8601
   snippet: string;
   changelogEntries?: string[];
+  fetchType: 'latest' | 'popular';
 }
 
 /** News item enriched by the Filter Agent. */

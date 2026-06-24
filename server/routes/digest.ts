@@ -367,7 +367,18 @@ const fetchDomainBriefing = async (config: DomainConfig): Promise<any> => {
   const topicId = mapConfigIdToTopicId(config.id);
   let items: any[] = [];
   try {
-    items = await fetchAllForUser([topicId]);
+    const allItems = await fetchAllForUser([topicId]);
+    
+    // Filter to ONLY 'latest' and within the last 7 days for the LLM briefing
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const cutoffMs = sevenDaysAgo.getTime();
+
+    items = allItems.filter(item => {
+      if (item.fetchType !== 'latest') return false;
+      const pubTime = new Date(item.publishedAt).getTime();
+      return pubTime >= cutoffMs;
+    });
   } catch (err) {
     logger.warn(`Failed to fetch real-time items for domain ${config.id}. Using knowledge base fallback.`, { error: String(err) });
   }
@@ -701,6 +712,32 @@ router.post('/trigger', async (req, res: Response): Promise<void> => {
       error: err instanceof Error ? err.message : String(err),
     });
     throw new AppError('Failed to trigger digest', 500);
+  }
+});
+
+// ─── GET /api/briefing/raw-news ────────────────────────────────────────────────
+router.get('/raw-news', async (req: any, res: Response): Promise<void> => {
+  try {
+    const domainId = req.query.domainId as string;
+    if (!domainId) {
+      res.status(400).json({ error: 'domainId query parameter is required' });
+      return;
+    }
+
+    const config = DOMAIN_CONFIGS.find(c => c.id === domainId);
+    if (!config) {
+      res.status(404).json({ error: `Domain not found: ${domainId}` });
+      return;
+    }
+
+    const topicId = mapConfigIdToTopicId(config.id);
+    const items = await fetchAllForUser([topicId]);
+    
+    // items are already sorted by publishedAt descending in news-service.ts
+    res.json(items);
+  } catch (err) {
+    logger.error('Failed to fetch raw news', { error: String(err) });
+    res.status(500).json({ error: String(err) });
   }
 });
 

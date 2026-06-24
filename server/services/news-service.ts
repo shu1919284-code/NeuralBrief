@@ -219,6 +219,7 @@ export async function fetchRSSFeed(source: NewsSource): Promise<NewsItem[]> {
             publishedAt,
             snippet,
             changelogEntries,
+            fetchType: 'latest',
           };
         })
         .filter((item): item is NewsItem => item !== null);
@@ -272,35 +273,46 @@ export async function fetchHackerNews(topicIds: string[]): Promise<NewsItem[]> {
       .slice(0, 5) // keep URL short
       .join(' ');
 
-    const response = await axios.get<HNResponse>(
-      'https://hn.algolia.com/api/v1/search',
-      {
+    const [popularResponse, latestResponse] = await Promise.all([
+      axios.get<HNResponse>('https://hn.algolia.com/api/v1/search', {
         params: { tags: 'story', query, hitsPerPage: HN_HITS_PER_PAGE },
         timeout: HTTP_TIMEOUT_MS,
-      },
-    );
-
-    const items: NewsItem[] = response.data.hits
-      .filter((hit) => !!(hit.url ?? hit.story_url))
-      .map((hit): NewsItem => {
-        const title = String(hit.title ?? hit.story_title ?? '').trim();
-        const url = String(hit.url ?? hit.story_url ?? '').trim();
-        const snippet = truncate(
-          String(hit.story_text ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '),
-          SNIPPET_MAX_LENGTH,
-        );
-
-        return {
-          id: nanoid(),
-          title,
-          url,
-          source: 'Hacker News',
-          topic: topicIds[0] ?? 'programming',
-          publishedAt: toIso(hit.created_at),
-          snippet,
-        };
+      }),
+      axios.get<HNResponse>('https://hn.algolia.com/api/v1/search_by_date', {
+        params: { tags: 'story', query, hitsPerPage: HN_HITS_PER_PAGE },
+        timeout: HTTP_TIMEOUT_MS,
       })
-      .filter((item) => item.title.length > 0 && item.url.length > 0);
+    ]);
+
+    const processHits = (hits: HNHit[], fetchType: 'latest' | 'popular'): NewsItem[] => {
+      return hits
+        .filter((hit) => !!(hit.url ?? hit.story_url))
+        .map((hit): NewsItem => {
+          const title = String(hit.title ?? hit.story_title ?? '').trim();
+          const url = String(hit.url ?? hit.story_url ?? '').trim();
+          const snippet = truncate(
+            String(hit.story_text ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '),
+            SNIPPET_MAX_LENGTH,
+          );
+
+          return {
+            id: nanoid(),
+            title,
+            url,
+            source: 'Hacker News',
+            topic: topicIds[0] ?? 'programming',
+            publishedAt: toIso(hit.created_at),
+            snippet,
+            fetchType
+          };
+        })
+        .filter((item) => item.title.length > 0 && item.url.length > 0);
+    };
+
+    const items: NewsItem[] = [
+      ...processHits(popularResponse.data.hits, 'popular'),
+      ...processHits(latestResponse.data.hits, 'latest')
+    ];
 
     logger.info('Hacker News fetch complete', { count: items.length });
     return items;
@@ -361,6 +373,7 @@ export async function fetchGitHubTrending(language?: string): Promise<NewsItem[]
         topic: 'programming',
         publishedAt: new Date().toISOString(),
         snippet,
+        fetchType: 'latest'
       });
     });
 
@@ -439,6 +452,9 @@ export async function fetchAllForUser(userTopicIds: string[]): Promise<NewsItem[
   if (failedSources.length > 0) {
     logger.warn('Some sources failed during fetchAllForUser', { failedSources });
   }
+
+  // Sort by publishedAt descending (latest first)
+  allItems.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
   const deduplicated = deduplicateByUrl(allItems);
 

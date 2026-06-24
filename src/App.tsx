@@ -43,6 +43,9 @@ const FAQ = lazy(() =>
 const AISignalDashboard = lazy(() =>
   import('./components/AISignalDashboard')
     .then(m => ({ default: m.AISignalDashboard })));
+const RawNewsFeed = lazy(() =>
+  import('./components/RawNewsFeed')
+    .then(m => ({ default: m.RawNewsFeed })));
 
 const getApiUrl = (path: string) => {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -274,6 +277,9 @@ function AppWithOnboarding() {
               error={errorDomains}
               onSelectDomain={(id) => setSelectedBriefing(id as any)}
             />
+            <Suspense fallback={null}>
+              <RawNewsFeed />
+            </Suspense>
             <Suspense fallback={null}>
               <Pipeline3D />
             </Suspense>
