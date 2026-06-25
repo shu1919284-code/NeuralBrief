@@ -20,11 +20,13 @@ import { ReadingTime } from './components/ReadingTime';
 import { DevDashboard } from './components/DevDashboard';
 import { BottomNav } from './components/BottomNav';
 import { BriefingPage } from './components/BriefingPage';
+import { FAQPage } from './components/FAQPage';
 import { OnboardingModal } from './components/OnboardingModal';
 import { db } from './lib/firebase';
 import { hashEmail } from './lib/hash';
 import { useAuth } from './contexts/AuthContext';
 import { CommandPalette } from './components/CommandPalette';
+import { getRichFallbackData } from './lib/fallbacks';
 
 const Engine = lazy(() =>
   import('./components/Engine')
@@ -192,6 +194,8 @@ function AppWithOnboarding() {
     'mlops' | 'model-releases' | 'ai-industry' | 'tools-libraries' | null
   >(null);
 
+  const [showFAQPage, setShowFAQPage] = useState(false);
+
   // Whether the onboarding modal should render
   const showOnboarding = !loading && !!user && (isNewUser || !onboardingComplete);
 
@@ -231,6 +235,13 @@ function AppWithOnboarding() {
     return () => window.removeEventListener('openBriefing', handleOpenBriefing);
   }, []);
 
+  // ── Global event listener for opening FAQ page ───────────
+  useEffect(() => {
+    const handleOpenFAQ = () => setShowFAQPage(true);
+    window.addEventListener('openFAQPage', handleOpenFAQ);
+    return () => window.removeEventListener('openFAQPage', handleOpenFAQ);
+  }, []);
+
   return (
     <>
       {/* Onboarding modal — renders on top of everything, z-[200] */}
@@ -238,10 +249,16 @@ function AppWithOnboarding() {
         <OnboardingModal onComplete={markOnboardingSeen} />
       )}
 
+      <AnimatePresence>
+        {showFAQPage && (
+          <FAQPage onBack={() => setShowFAQPage(false)} />
+        )}
+      </AnimatePresence>
+
       {selectedBriefing ? (
         <BriefingPage
           onBack={() => setSelectedBriefing(null)}
-          data={selectedBriefing === 'core' ? briefingData : domainsData.find(d => d.id === selectedBriefing)}
+          data={selectedBriefing === 'core' ? briefingData : getRichFallbackData(selectedBriefing, domainsData.find(d => d.id === selectedBriefing))}
           loading={selectedBriefing === 'core' ? loadingBriefing : loadingDomains}
           error={selectedBriefing === 'core' ? errorBriefing : errorDomains}
         />

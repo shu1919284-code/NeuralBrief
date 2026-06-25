@@ -7,13 +7,10 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const faqs = [
-    { question: t('faq.q1'), answer: t('faq.a1') },
-    { question: t('faq.q2'), answer: t('faq.a2') },
-    { question: t('faq.q3'), answer: t('faq.a3') },
-    { question: t('faq.q4'), answer: t('faq.a4') },
-    { question: t('faq.q5'), answer: t('faq.a5') },
-    { question: t('faq.q6'), answer: t('faq.a6') },
-    { question: t('faq.q7'), answer: t('faq.a7') },
+    { question: t('faq.q4'), answer: t('faq.a4') }, // Privacy
+    { question: t('faq.q2'), answer: t('faq.a2') }, // Delivery Time
+    { question: t('faq.q1'), answer: t('faq.a1') }, // Topics
+    { question: t('faq.q3'), answer: t('faq.a3') }, // Duplicates
   ];
 
   const toggleOpen = (index: number) => {
@@ -54,7 +51,7 @@ export function FAQ() {
                 aria-expanded={isOpen}
                 aria-controls={`faq-answer-${index}`}
                 id={`faq-question-${index}`}
-                className="w-full py-6 flex justify-between items-center text-left focus:outline-none cursor-pointer group"
+                className="w-full py-4 flex justify-between items-center text-left focus:outline-none cursor-pointer group"
               >
                 <span
                   className={`font-heading text-xl md:text-2xl inline-block group-hover:italic transition-transform duration-200 ease-out${
@@ -77,7 +74,7 @@ export function FAQ() {
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="1"
+                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
@@ -115,6 +112,21 @@ export function FAQ() {
           );
         })}
       </div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1, delay: 0.5 }}
+        className="mt-12 text-center"
+      >
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('openFAQPage'))}
+          className="text-xs uppercase font-bold tracking-widest text-accent hover:text-white transition-colors italic group cursor-pointer inline-flex items-center"
+        >
+          {t('faq_view_all') || 'View All Frequently Asked Questions →'}
+        </button>
+      </motion.div>
     </section>
   );
 }

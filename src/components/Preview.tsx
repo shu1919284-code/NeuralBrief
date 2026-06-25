@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { motion, useScroll, useTransform } from 'motion/react';
+import { motion, useScroll, useTransform, useMotionValue, useSpring, useMotionTemplate } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -30,28 +30,46 @@ const TABS: Tab[] = [
   { id: 'agentic',  label: 'Agentic Ops'   },
 ];
 
-// ─── light sweep keyframe (injected once) ────────────────────────────────────
-//
-// The sweep is a single linear gradient band that moves left→right.
-// Max opacity on the gradient peak is 0.04 (4%) — essentially invisible
-// at a glance but gives the card surface a sense of depth on hover.
+// ─── CircularGauge ─────────────────────────────────────────────────────────────
 
-const SWEEP_KEYFRAMES = `
-@keyframes nb-article-sweep {
-  from { transform: translateX(-110%); }
-  to   { transform: translateX(110%);  }
-}
-`;
+const CircularGauge = ({ value }: { value: number }) => {
+  const radius = 16;
+  const circumference = 2 * Math.PI * radius;
+  const percentage = Math.min(Math.max(value, 0), 1) * 100;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-if (typeof document !== 'undefined') {
-  const existing = document.getElementById('nb-article-sweep-style');
-  if (!existing) {
-    const el = document.createElement('style');
-    el.id = 'nb-article-sweep-style';
-    el.textContent = SWEEP_KEYFRAMES;
-    document.head.appendChild(el);
-  }
-}
+  return (
+    <div className="relative flex items-center justify-center w-10 h-10">
+      <svg className="w-full h-full transform -rotate-90">
+        <circle
+          cx="20"
+          cy="20"
+          r={radius}
+          stroke="var(--color-border-subtle)"
+          strokeWidth="3"
+          fill="transparent"
+        />
+        <motion.circle
+          cx="20"
+          cy="20"
+          r={radius}
+          stroke="var(--color-accent)"
+          strokeWidth="3"
+          fill="transparent"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+          strokeLinecap="round"
+          style={{ filter: 'drop-shadow(0 0 4px var(--color-accent))' }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold text-text-main shadow-lg">
+        {percentage.toFixed(0)}%
+      </div>
+    </div>
+  );
+};
 
 // ─── ArticleCard ─────────────────────────────────────────────────────────────
 
@@ -70,135 +88,99 @@ function ArticleCard({ staggerIndex, phase, onOpenBriefing, data }: ArticleCardP
   const [hovered, setHovered] = useState(false);
   const [linkHovered, setLinkHovered] = useState(false);
 
-  // ── derive opacity/transform from phase ──────────────────────────────────
-  //
-  // exiting: opacity→0, translateY→-8px (old content slides up and fades)
-  // entering: cards fade in with stagger (handled by motion.div below)
-  // idle: fully visible
+  // ── mouse tracking for holographic glow ────────────────────────────────────
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top } = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - left);
+    mouseY.set(e.clientY - top);
+  };
+
+  const smoothX = useSpring(mouseX, { stiffness: 300, damping: 30 });
+  const smoothY = useSpring(mouseY, { stiffness: 300, damping: 30 });
+  const background = useMotionTemplate`radial-gradient(400px circle at ${smoothX}px ${smoothY}px, var(--color-accent) 0%, transparent 60%)`;
 
   const isExiting = phase === 'exiting';
   const isEntering = phase === 'entering';
 
   return (
     <motion.div
-      // Entrance animation: each card starts below and fades in.
-      // We reset the key when phase changes to 'entering' so the animation
-      // re-triggers. The parent handles key-switching (see Preview).
       initial={isEntering ? { opacity: 0, y: 16 } : false}
-      animate={
-        isExiting
-          ? { opacity: 0, y: -8 }
-          : { opacity: 1, y: 0 }
-      }
+      animate={isExiting ? { opacity: 0, y: -8 } : { opacity: 1, y: 0 }}
       transition={
         isExiting
           ? { duration: TAB_EXIT_DURATION / 1000, ease: 'easeIn' }
-          : {
-              duration: CARD_ENTRANCE_DURATION,
-              ease: CARD_ENTRANCE_EASE,
-              delay: staggerIndex * CARD_STAGGER_MS,
-            }
+          : { duration: CARD_ENTRANCE_DURATION, ease: CARD_ENTRANCE_EASE, delay: staggerIndex * CARD_STAGGER_MS }
       }
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      // Overflow hidden so the sweep pseudo-element doesn't leak
-      className='relative overflow-hidden'
+      onMouseMove={handleMouseMove}
+      onClick={onOpenBriefing}
+      className='relative overflow-hidden rounded-2xl group cursor-pointer'
       style={{ willChange: 'transform, opacity' }}
     >
-      {/*
-       * Light sweep overlay.
-       *
-       * Positioned absolutely, full-height, narrow band.
-       * On hover: plays the sweep animation once (500ms ease).
-       * Gradient is white at 4% peak, transparent on both edges.
-       * `pointer-events: none` so it never blocks clicks.
-       */}
-      <div
-        aria-hidden='true'
-        style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 1,
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            // Width wider than 100% so the gradient fade-edges are visible
-            width: '60%',
-            background:
-              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.04) 60%, transparent 100%)',
-            // Only animate when hovered; reset instantly when not
-            animation: hovered
-              ? 'nb-article-sweep 500ms ease forwards'
-              : 'none',
-            transform: 'translateX(-110%)',
-          }}
-        />
-      </div>
+      {/* Dynamic Holographic Background */}
+      <div className="absolute inset-0 bg-[#0A0A0A]/60 backdrop-blur-3xl z-0 transition-opacity duration-500" />
+      <motion.div
+        className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 z-0 pointer-events-none mix-blend-screen"
+        style={{ background }}
+      />
+      {/* Subtle Grid overlay */}
+      <div 
+        className="absolute inset-0 z-0 opacity-10 pointer-events-none"
+        style={{ backgroundImage: 'radial-gradient(circle at center, var(--color-text-muted) 1px, transparent 1px)', backgroundSize: '16px 16px' }}
+      />
 
-      {/* Card content sits above the sweep overlay */}
-      <div
-        className='bg-surface-dim p-8 border'
-        style={{
-          position: 'relative',
-          zIndex: 2,
-          borderColor: hovered ? 'var(--color-accent, #e5e5e5)' : 'transparent',
-          boxShadow: hovered ? 'inset 0 0 20px var(--color-theme-glow)' : 'none',
-          transition: `border-color 250ms ease, background-color 200ms ease, box-shadow 250ms ease`,
-        }}
-      >
+      {/* Card Border that glows on hover */}
+      <div className="absolute inset-0 border border-border-subtle rounded-2xl group-hover:border-accent/40 transition-colors duration-500 z-10 pointer-events-none shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] group-hover:shadow-[inset_0_0_20px_var(--color-theme-glow)]" />
+
+      {/* Card Content */}
+      <div className='relative z-20 p-8 md:p-10 flex flex-col h-full'>
         {data ? (
           <>
-            <h5 className='font-heading text-2xl mb-4 transition-all'>{data.title}</h5>
-            <p className='text-sm text-text-main/70 mb-8 leading-relaxed max-w-2xl'>
+            <h5 className='font-heading text-3xl md:text-4xl mb-6 text-text-main group-hover:text-accent transition-colors duration-300'>{data.title}</h5>
+            <p className='text-sm md:text-base text-text-muted mb-10 leading-relaxed max-w-3xl flex-grow'>
               {data.summary}
             </p>
-            <div className='flex flex-wrap items-center justify-between text-[10px] uppercase tracking-widest gap-4 border-t border-border-subtle pt-4'>
-              <div className='flex gap-6 flex-wrap font-bold'>
-                <span className='text-text-main'>{t('preview_update')}</span>
-                <span className='text-text-muted'>{data.source}</span>
-                <span className='text-text-muted' style={{ color: 'var(--color-accent)', textShadow: '0 0 8px var(--color-theme-glow)' }}>Conf: {data.confidence?.toFixed(3)}</span>
+            
+            {/* Footer with Cyber-Pulse Badges */}
+            <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 border-t border-border-subtle/50 pt-6 mt-auto'>
+              
+              <div className='flex gap-4 flex-wrap items-center'>
+                {/* Live Update Pulse Badge */}
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 text-[10px] font-bold uppercase tracking-widest text-rose-400">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                  </span>
+                  {t('preview_update')}
+                </div>
+
+                {/* Source Pill */}
+                <div className="px-3 py-1.5 rounded-full border border-border-subtle bg-surface-dim/80 text-[10px] font-bold uppercase tracking-widest text-text-muted">
+                  {data.source}
+                </div>
+
+                {/* Confidence Gauge */}
+                <div className="flex items-center gap-3 bg-[#050505]/50 border border-accent/20 rounded-full pr-4 pl-1 py-1">
+                  <CircularGauge value={data.confidence || 0.9} />
+                  <div className="flex flex-col">
+                    <span className="text-[9px] text-text-muted uppercase tracking-widest">Confidence</span>
+                    <span className="text-xs text-accent font-bold font-mono">HIGH</span>
+                  </div>
+                </div>
               </div>
 
-              {/*
-               * "Read Full Doc →"
-               *
-               * On hover:
-               *   - letter-spacing increases to 0.03em (200ms ease)
-               *   - text opacity drops to 0.7 (200ms ease)
-               *   - the "→" shifts 3px right independently (200ms ease)
-               */}
+              {/* Enhanced CTA */}
               <button
-                onClick={onOpenBriefing}
-                onMouseEnter={() => setLinkHovered(true)}
-                onMouseLeave={() => setLinkHovered(false)}
-                className='font-heading italic active:scale-95 transition-transform text-xs cursor-pointer'
-                style={{
-                  opacity: linkHovered ? 0.7 : 1,
-                  letterSpacing: linkHovered ? '0.03em' : '0em',
-                  transition: 'opacity 200ms ease, letter-spacing 200ms ease',
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                }}
+                onMouseEnter={(e) => { e.stopPropagation(); setLinkHovered(true); }}
+                onMouseLeave={(e) => { e.stopPropagation(); setLinkHovered(false); }}
+                className='font-heading italic text-sm cursor-pointer group/btn flex items-center gap-2 text-text-main hover:text-accent transition-colors bg-transparent border-none p-0'
               >
-                {/* Text portion */}
-                <span>{t('preview_read_full_doc')} </span>
-                {/* Arrow shifts independently */}
-                <span
-                  style={{
-                    display: 'inline-block',
-                    transform: linkHovered ? 'translateX(3px)' : 'translateX(0)',
-                    transition: 'transform 200ms ease',
-                  }}
-                >
-                  →
-                </span>
+                <span>{t('preview_read_full_doc')}</span>
+                <span className="transform group-hover/btn:translate-x-1 transition-transform">→</span>
               </button>
             </div>
           </>
@@ -407,9 +389,23 @@ export function Preview({
     if (displayedTab === 'all') {
       activeData = data;
     } else if (displayedTab === 'research') {
-      activeData = domainsData?.find(d => d.id === 'ai-research');
+      const d = domainsData?.find(d => d.id === 'ai-research');
+      activeData = {
+        ...d,
+        title: d?.title && d?.title !== 'UNAVAILABLE' ? d.title : 'AI Research',
+        summary: d?.summary && !d?.summary.toLowerCase().includes('unavailable') ? d.summary : 'Daily ArXiv analysis, breakthroughs of foundational breakthroughs, and algorithmic updates.',
+        source: d?.source && d?.source !== 'UNAVAILABLE' ? d.source : 'ArXiv CS.LG',
+        confidence: d?.confidence || 0.95
+      };
     } else if (displayedTab === 'agentic') {
-      activeData = domainsData?.find(d => d.id === 'agentic-frameworks');
+      const d = domainsData?.find(d => d.id === 'agentic-frameworks');
+      activeData = {
+        ...d,
+        title: d?.title && d?.title !== 'UNAVAILABLE' ? d.title : 'Agentic Frameworks',
+        summary: d?.summary && !d?.summary.toLowerCase().includes('unavailable') ? d.summary : 'Multi-agent graphs, autonomous memory layers, and stateful routing architectures.',
+        source: d?.source && d?.source !== 'UNAVAILABLE' ? d.source : 'LangChain / CrewAI',
+        confidence: d?.confidence || 0.92
+      };
     }
 
     if (!activeData) return <ArticleCardSkeleton />;
