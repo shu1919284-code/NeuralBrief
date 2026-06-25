@@ -31,6 +31,30 @@ You select your domains once. The agents handle everything else.
 
 ---
 
+## 📸 Platform Showcase
+
+### ⚡ Neural Engine in Action
+Watch the highly fluid glassmorphic interface and intelligent mouse-tracking animations come to life:
+<br/>
+<img src="docs/assets/demo.webp" alt="Neural Engine Animation" width="800" style="border-radius: 8px;" />
+
+### 1. The Bento Command Center
+An asymmetrical, responsive Bento Grid displaying live streams of intelligence domains. All 8 domains are visible simultaneously with unified metrics.
+<br/>
+<img src="docs/assets/focus_domains.png" alt="Focus Domains Bento Grid" width="800" style="border-radius: 8px;" />
+
+### 2. Holographic AI Data Plate
+A premium, glassmorphic card interface featuring an interactive, mouse-tracking radial glow that illuminates the content beneath your cursor. Includes animated SVG confidence gauges and pulsing "Live Update" badges.
+<br/>
+<img src="docs/assets/preview.png" alt="Holographic Data Plate" width="800" style="border-radius: 8px;" />
+
+### 3. Rich Technical Reports
+Every domain card expands into a detailed technical report. Even when the live feed is unavailable, the system gracefully falls back to beautifully simulated architectural overviews and key takeaways.
+<br/>
+<img src="docs/assets/briefing.png" alt="Briefing Reader" width="800" style="border-radius: 8px;" />
+
+---
+
 ## How it works
 
 NeuralBrief runs a fully automated pipeline triggered daily by Google Cloud Scheduler. Four specialized agents execute in sequence:
