@@ -31,6 +31,12 @@ You select your domains once. The agents handle everything else.
 
 ---
 
+## 🌐 Live Platform
+
+**Access the live web application here:** [https://neuralbrief-be395.web.app/](https://neuralbrief-be395.web.app/)
+
+---
+
 ## 📸 Platform Showcase
 
 ### ⚡ Neural Engine in Action
