@@ -266,7 +266,7 @@ export function FocusDomains({
       ...fallback,
       ...d,
       source: d.source && d.source !== 'UNAVAILABLE' ? d.source : fallback.source,
-      time: d.time && d.time !== 'Weekly Sync' ? d.time : fallback.time,
+      time: d.time && d.time !== 'Weekly Sync' ? d.time : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       tags: d.tags && d.tags.length > 0 ? d.tags : fallback.tags,
     };
   });
