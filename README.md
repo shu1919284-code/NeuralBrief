@@ -41,6 +41,11 @@ Alerts should have been.
 
 ## 📸 Platform Showcase
 
+### ⚡ Neural Engine in Action
+Watch the highly fluid glassmorphic interface and intelligent mouse-tracking animations come to life:
+<br/>
+<img src="docs/assets/demo.webp" alt="Neural Engine Animation" width="800" style="border-radius: 8px;" />
+
 ### 1. The Bento Command Center
 An asymmetrical, responsive Bento Grid displaying live streams of intelligence domains. All 8 domains are visible simultaneously with unified metrics.
 <br/>
