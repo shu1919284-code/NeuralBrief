@@ -69,20 +69,21 @@ interface SingleDomainCardProps {
   };
   index: number;
   onSelectDomain: (id: string) => void;
+  isFront: boolean;
+  onClick: () => void;
+  animate: any;
+  zIndex: number;
 }
 
-function SingleDomainCard({ card, index, onSelectDomain }: SingleDomainCardProps) {
+function SingleDomainCard({ card, index, onSelectDomain, isFront, onClick, animate, zIndex }: SingleDomainCardProps) {
   const { t } = useLanguage();
   const [hovered, setHovered] = useState(false);
   const [bookmarkPulsing, setBookmarkPulsing] = useState(false);
   const [loading, setLoading] = useState(false);
   const bookmarkWrapperRef = useRef<HTMLDivElement>(null);
-
-  // Refs for the CSS 3D tilt-on-mousemove effect (same pattern as PhaseCard in Engine.tsx).
   const cardRef = useRef<HTMLDivElement>(null);
   const glareRef = useRef<HTMLDivElement>(null);
 
-  // Reset loading on unmount so stale state never leaks into a remounted card.
   useEffect(() => {
     return () => setLoading(false);
   }, []);
@@ -105,23 +106,16 @@ function SingleDomainCard({ card, index, onSelectDomain }: SingleDomainCardProps
   const summary = getLocalizedSummary(card.id, card.summary);
 
   const handleBookmarkClick = useCallback((e: React.MouseEvent) => {
-    // Don't propagate to card click
     e.stopPropagation();
-
-    // Remove then re-add the class so re-clicking retrigggers the animation
     if (bookmarkWrapperRef.current) {
       bookmarkWrapperRef.current.classList.remove('nb-bookmark-pulse');
-      // Force reflow so the class removal takes effect before we add it back
       void bookmarkWrapperRef.current.offsetWidth;
       bookmarkWrapperRef.current.classList.add('nb-bookmark-pulse');
     }
-
     setBookmarkPulsing(true);
     setTimeout(() => setBookmarkPulsing(false), 320);
   }, []);
 
-  // 3D tilt: track pointer position over the card face and apply a perspective
-  // rotation plus a radial glare that follows the cursor.
   const handleCardMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const card = cardRef.current;
     if (!card) return;
@@ -136,151 +130,159 @@ function SingleDomainCard({ card, index, onSelectDomain }: SingleDomainCardProps
     if (glare) {
       const gx = (x + 0.5) * 100;
       const gy = (y + 0.5) * 100;
-      glare.style.background = `radial-gradient(circle at ${gx}% ${gy}%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent)`;
+      glare.style.background = `radial-gradient(circle at ${gx}% ${gy}%, color-mix(in srgb, var(--color-accent) 15%, transparent), transparent)`;
       glare.style.opacity = '1';
     }
   }, []);
 
+  const sparklinePath = React.useMemo(() => {
+    const points = [];
+    const width = 200;
+    const height = 40;
+    const segments = 10;
+    const random = (seed: number) => {
+      const x = Math.sin(seed + 1) * 10000;
+      return x - Math.floor(x);
+    };
+    for (let i = 0; i <= segments; i++) {
+      const x = (i / segments) * width;
+      const y = height - (random(index * 10 + i) * height * 0.8) - 5;
+      points.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
+    }
+    return points.join(' ');
+  }, [index]);
+  
+  const signalsCount = React.useMemo(() => {
+    return Math.floor(800 + Math.abs(Math.sin(index)) * 2500).toLocaleString();
+  }, [index]);
+
   const handleCardMouseLeave = useCallback(() => {
     const card = cardRef.current;
-    if (card) {
-      card.style.transform = '';
-    }
-    if (glareRef.current) {
-      glareRef.current.style.opacity = '0';
-    }
+    if (card) card.style.transform = '';
+    const glare = glareRef.current;
+    if (glare) glare.style.opacity = '0';
   }, []);
 
   return (
     <motion.div
-      // ── Scroll entrance (fires once per spec) ──
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{
-        duration: CARD_ENTRANCE_DURATION,
-        ease: CARD_ENTRANCE_EASE,
-        delay: index * CARD_STAGGER_MS,
-      }}
-      // ── Hover lift (translateY only — no rotation) ──
-      animate={{ y: hovered ? -3 : 0 }}
-      // Separate animate from whileInView by using a key-based approach:
-      // motionValue for the lift is separate from the entrance.
-      // We achieve this by NOT using whileHover (which conflicts with animate)
-      // and instead tracking hover state manually and driving `y` via animate.
-      //
-      // NOTE: We can't combine whileHover y with initial/whileInView y on the same
-      // motion.div cleanly, so we split: entrance runs via whileInView (sets y to 0),
-      // then we manage hover y via the `animate` prop with a fast spring.
-      //
-      // The entrance transition takes precedence while mounting; after it completes
-      // the animate={{ y: hovered ? -3 : 0 }} drives the hover lift.
-      style={{ willChange: 'transform, opacity' }}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
-      onTap={() => {
-        setLoading(true);
-        setTimeout(() => onSelectDomain(card.id), 400);
-      }}
-      whileTap={{ scale: 0.96 }}
-      className='relative h-full flex'
+      initial={false}
+      animate={animate}
+      style={{ zIndex }}
+      transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+      className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-500
+        ${isFront ? 'w-[320px] md:w-[400px] h-[400px] md:h-[480px]' : 'w-[200px] md:w-[260px] h-[260px] md:h-[320px]'}
+      `}
+      onClick={onClick}
+      onHoverStart={() => isFront && setHovered(true)}
+      onHoverEnd={() => isFront && setHovered(false)}
     >
-      {/*
-       * Bookmark wrapper — sits absolute top-right.
-       * The wrapper itself is what we pulse (scale animation lives here).
-       * On card hover, we also brighten the wrapper's background via inline style
-       * so the circle behind BookmarkButton feels connected to the card state.
-       */}
-      <div
-        ref={bookmarkWrapperRef}
-        onClick={handleBookmarkClick}
-        className='absolute top-4 right-4 z-10 rounded-full transition-colors'
-        style={{
-          // Slightly brightened circle on card hover — BookmarkButton renders
-          // its own button inside, so this adds a visible brightening ring.
-          backgroundColor: hovered ? 'rgba(255,255,255,0.06)' : 'transparent',
-          transition: `background-color ${HOVER_BORDER_DURATION} ease`,
-          // Ensure the pulse animation scale originates from the circle center
-          transformOrigin: 'center center',
-        }}
-      >
-        <BookmarkButton sectionId={card.title} />
-      </div>
-
-      {/*
-       * Main card face.
-       * Border transition handled here via Tailwind + inline transition-duration override.
-       * We DON'T add translateY here — it's on the motion.div parent above.
-       * CSS 3D tilt-on-mousemove (rotateX/rotateY + glare) is applied directly via
-       * cardRef/glareRef, matching the PhaseCard pattern in Engine.tsx.
-       */}
       <div
         ref={cardRef}
-        onMouseMove={handleCardMouseMove}
-        onMouseLeave={handleCardMouseLeave}
+        onMouseMove={isFront ? handleCardMouseMove : undefined}
+        onMouseLeave={isFront ? handleCardMouseLeave : undefined}
         className={[
-          'bg-transparent border p-10 h-full',
-          'group cursor-pointer flex flex-col justify-between w-full',
-          'active:bg-surface-dim',
-          '[transform-style:preserve-3d]',
-          hovered ? 'border-text-main' : 'border-border-subtle',
-          loading ? 'opacity-70' : '',
+          'bg-[#0A0A0A]/60 backdrop-blur-xl border h-full transition-all duration-500 rounded-xl overflow-hidden relative group',
+          isFront ? 'border-accent shadow-[0_0_40px_var(--color-theme-glow)]' : 'border-border-subtle shadow-none hover:border-text-muted hover:bg-surface-dim/80',
+          loading && isFront ? 'opacity-70' : '',
         ].join(' ')}
-        style={{
-          // Explicit transition only on border-color and background so we don't
-          // accidentally transition transforms here (those live on motion.div).
-          transition: `border-color ${HOVER_BORDER_DURATION} ease, background-color 200ms ease, transform 0.15s ease-out, opacity 200ms ease`,
-        }}
       >
-        {/* Glare overlay — radial gradient follows the cursor, faded in/out via opacity */}
+        {isFront && (
+          <div
+            ref={bookmarkWrapperRef}
+            onClick={handleBookmarkClick}
+            className='absolute top-4 right-4 z-20 rounded-full transition-colors'
+            style={{
+              backgroundColor: hovered ? 'rgba(255,255,255,0.06)' : 'transparent',
+              transition: `background-color ${HOVER_BORDER_DURATION} ease`,
+              transformOrigin: 'center center',
+            }}
+          >
+            <BookmarkButton sectionId={card.title} />
+          </div>
+        )}
+
         <div
           ref={glareRef}
-          className='absolute inset-0 pointer-events-none opacity-0'
+          className='absolute inset-0 pointer-events-none opacity-0 mix-blend-screen z-20'
           style={{ transition: 'opacity 0.15s ease-out' }}
         />
 
-        <div>
+        {/* Satellite View (Inactive) */}
+        <div className={`absolute inset-0 flex flex-col items-center justify-center p-6 text-center transition-opacity duration-500 ${isFront ? 'opacity-0 pointer-events-none' : 'opacity-50 group-hover:opacity-100'}`}>
           {getDomainIcon(card.id)}
-          <h3
-            className='font-heading text-2xl mb-4 transition-all'
-            style={{ fontStyle: hovered ? 'italic' : 'normal' }}
-          >
-            {title}
-          </h3>
-          <p className='text-text-muted text-sm mb-8'>{summary}</p>
+          <h3 className="font-heading text-lg md:text-xl mt-2 text-text-muted">{title}</h3>
         </div>
 
-        <div>
-          <div className='border-t border-border-subtle pt-6 text-[10px] space-y-2 text-text-muted uppercase tracking-widest flex flex-col font-mono'>
-            <div className='flex justify-between items-center'>
-              <span>{t('source')}</span>
-              <span className='text-text-main'>{card.source}</span>
-            </div>
-            <div className='flex justify-between items-center'>
-              <span>{t('focus_last_sync')}</span>
-              <span className='text-text-main flex items-center pr-1'>
-                {card.time ? (card.time === 'Weekly Sync' ? t('focus_weekly_sync') : card.time) : t('profile.weekly')}
-              </span>
-            </div>
+        {/* Core View (Active) */}
+        <div className={`absolute inset-0 flex flex-col p-6 md:p-8 transition-opacity duration-500 ${isFront ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <div className="absolute bottom-0 left-0 w-full h-32 pointer-events-none opacity-[0.04] group-hover:opacity-20 transition-opacity duration-500 z-0">
+            <svg viewBox="0 0 200 40" preserveAspectRatio="none" className="w-full h-full">
+              <motion.path
+                d={sparklinePath}
+                fill="none"
+                stroke="var(--color-accent)"
+                strokeWidth="1.5"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: isFront ? 1 : 0 }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+              />
+              <path d={sparklinePath} fill="none" stroke="var(--color-accent)" strokeWidth="1.5" className="opacity-30" />
+            </svg>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/50 to-transparent" />
           </div>
 
-          {/* "Read Report →" — appears on hover; shows loading state when card is tapped */}
-          <div
-            className='mt-4 text-[10px] uppercase font-bold tracking-widest text-right italic text-text-main flex items-center justify-end'
-            style={{
-              opacity: loading || hovered ? 1 : 0,
-              transform: loading || hovered ? 'translateY(0)' : 'translateY(4px)',
-              transition: 'opacity 300ms ease, transform 300ms ease',
-            }}
-          >
-            {loading ? (
-              <>
-                <span className='w-3 h-3 rounded-full border border-text-main border-t-transparent animate-spin inline-block mr-2' />
-                {t('profile.loading')}
-              </>
-            ) : (
-              t('focus_read_report')
-            )}
+          <div className="relative z-10 flex-grow">
+            <div className="flex justify-between items-start mb-6">
+              {getDomainIcon(card.id)}
+              <div className="text-[9px] font-mono tracking-widest uppercase px-2 py-1 bg-surface border border-border-subtle text-text-muted transition-colors group-hover:border-accent/30 group-hover:text-accent">
+                [SIGNALS: {signalsCount}]
+              </div>
+            </div>
+            <h3
+              className='font-heading text-3xl md:text-4xl mb-4 transition-all group-hover:text-accent'
+              style={{ fontStyle: hovered ? 'italic' : 'normal' }}
+            >
+              {title}
+            </h3>
+            <p className='text-text-muted text-sm md:text-base mb-8 leading-relaxed'>{summary}</p>
+          </div>
+
+          <div className="relative z-10 mt-auto">
+            <div className='border-t border-border-subtle pt-6 text-[10px] space-y-3 text-text-muted uppercase tracking-widest flex flex-col font-mono'>
+              <div className='flex justify-between items-center'>
+                <span>{t('source')}</span>
+                <span className='text-text-main flex items-center gap-2'>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-[pulse_2s_infinite]"></span>
+                  {card.source}
+                </span>
+              </div>
+              <div className='flex justify-between items-center'>
+                <span>{t('focus_last_sync')}</span>
+                <span className='text-text-main flex items-center pr-1'>
+                  {card.time ? (card.time === 'Weekly Sync' ? t('focus_weekly_sync') : card.time) : t('profile.weekly')}
+                </span>
+              </div>
+            </div>
+
+            <div
+              className='mt-6 pt-4 border-t border-border-subtle/30 text-xs uppercase font-bold tracking-widest text-center italic text-text-main flex items-center justify-center cursor-pointer hover:text-accent transition-colors'
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isFront) {
+                  setLoading(true);
+                  setTimeout(() => onSelectDomain(card.id), 400);
+                }
+              }}
+            >
+              {loading ? (
+                <>
+                  <span className='w-4 h-4 rounded-full border border-text-main border-t-transparent animate-spin inline-block mr-2' />
+                  {t('profile.loading')}
+                </>
+              ) : (
+                t('focus_read_report') + " →"
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -302,6 +304,17 @@ export function FocusDomains({
   onSelectDomain: (id: string) => void;
 }) {
   const { t } = useLanguage();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-play interval
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % cardsToRender.length);
+    }, 6000); // Rotate every 6 seconds
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
   const staticFallbacks = [
     {
@@ -363,6 +376,7 @@ export function FocusDomains({
   ];
 
   const cardsToRender = domains && domains.length > 0 ? domains : staticFallbacks;
+  const numCards = cardsToRender.length;
 
   if (loading) {
     return (
@@ -378,46 +392,53 @@ export function FocusDomains({
             {t('focus_desc')}
           </p>
         </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div
-              key={i}
-              className='bg-surface-dim/40 border border-border-subtle p-10 h-[380px] animate-pulse flex flex-col justify-between'
-            >
-              <div>
-                <div className='w-6 h-6 bg-text-muted/15 rounded mb-6' />
-                <div className='h-6 bg-text-muted/15 rounded w-2/3 mb-4' />
-                <div className='space-y-2 mb-8'>
-                  <div className='h-3 bg-text-muted/10 rounded w-full' />
-                  <div className='h-3 bg-text-muted/10 rounded w-5/6' />
-                </div>
-              </div>
-              <div className='border-t border-border-subtle pt-6 space-y-2'>
-                <div className='flex justify-between'>
-                  <div className='h-2 bg-text-muted/10 rounded w-1/4' />
-                  <div className='h-2 bg-text-muted/10 rounded w-1/3' />
-                </div>
-                <div className='flex justify-between'>
-                  <div className='h-2 bg-text-muted/10 rounded w-1/4' />
-                  <div className='h-2 bg-text-muted/10 rounded w-1/4' />
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className='relative h-[600px] w-full flex items-center justify-center'>
+          <div className='w-[400px] h-[480px] bg-surface-dim/40 border border-border-subtle animate-pulse rounded-xl' />
         </div>
       </section>
     );
   }
 
   return (
-    <section className='py-32 px-6 md:px-16 max-w-7xl mx-auto' id='topics'>
-      {/* Section header — unchanged from original */}
+    <section className='py-32 px-4 md:px-16 max-w-[1400px] mx-auto overflow-hidden relative' id='topics'>
+      <style>{`
+        .orbit-container {
+          --orbit-rx: 1.0;
+          --orbit-ry: 0.25;
+        }
+        @media (min-width: 768px) {
+          .orbit-container {
+            --orbit-rx: 3.5;
+            --orbit-ry: 0.7;
+          }
+        }
+        @media (min-width: 1200px) {
+          .orbit-container {
+            --orbit-rx: 4.8;
+            --orbit-ry: 0.8;
+          }
+        }
+        
+        .orbit-ring {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: calc(200px * var(--orbit-rx));
+          height: calc(200px * var(--orbit-ry));
+          border-radius: 50%;
+          border: 1px dashed var(--color-accent);
+          opacity: 0.15;
+          pointer-events: none;
+        }
+      `}</style>
+
       <motion.div
         initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-100px' }}
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        className='text-center mb-20'
+        className='text-center mb-10 relative z-20'
       >
         <span className='text-[10px] uppercase tracking-widest text-text-muted mb-4 block font-bold'>
           {t('focus_overline')}
@@ -435,15 +456,54 @@ export function FocusDomains({
         )}
       </motion.div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-        {cardsToRender.map((card, i) => (
-          <SingleDomainCard
-            key={card.id || i}
-            card={card}
-            index={i}
-            onSelectDomain={onSelectDomain}
-          />
-        ))}
+      <div 
+        className='relative h-[550px] md:h-[700px] w-full flex items-center justify-center orbit-container mt-10 md:mt-20 perspective-[1200px]'
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        {/* Physical Orbit Rings */}
+        <div className="orbit-ring animate-[spin_120s_linear_infinite]" />
+        <div className="orbit-ring scale-[0.8] opacity-10 animate-[spin_80s_linear_infinite_reverse]" />
+        
+        {/* Glowing Neural Core */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full bg-accent/20 blur-[120px] pointer-events-none opacity-40 mix-blend-screen" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 md:w-48 md:h-48 rounded-full border border-accent/30 animate-[ping_4s_cubic-bezier(0,0,0.2,1)_infinite] pointer-events-none opacity-30" />
+        
+        {cardsToRender.map((card, i) => {
+          // Angle offset so activeIndex is at front (rad = 0)
+          const angleOffset = ((i - activeIndex + numCards) % numCards) * (360 / numCards);
+          const rad = (angleOffset * Math.PI) / 180;
+          
+          const z = Math.cos(rad); // 1 is front, -1 is back
+          const x = Math.sin(rad); 
+          
+          const scale = (z + 1) / 2; // 0 to 1
+          const mappedScale = 0.55 + scale * 0.45; // 0.55 to 1.0
+          const opacity = 0.15 + scale * 0.85; // 0.15 to 1.0
+          const zIndex = Math.round(scale * 100);
+          
+          const isFront = i === activeIndex;
+
+          return (
+            <SingleDomainCard
+              key={card.id || i}
+              card={card}
+              index={i}
+              onSelectDomain={onSelectDomain}
+              isFront={isFront}
+              onClick={() => {
+                if (!isFront) setActiveIndex(i);
+              }}
+              animate={{
+                x: `calc(${x * 100}px * var(--orbit-rx))`,
+                y: `calc(${z * -100}px * var(--orbit-ry))`,
+                scale: mappedScale,
+                opacity: opacity,
+              }}
+              zIndex={zIndex}
+            />
+          );
+        })}
       </div>
     </section>
   );

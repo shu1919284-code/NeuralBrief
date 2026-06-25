@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { logger } from '../utils/logger';
+import { SOURCES } from '../config/sources';
 
 // Very basic in-memory cache for 5 minutes
 let statsCache: any = null;
@@ -31,13 +32,12 @@ export const handleStatsBriefing = async (_req: Request, res: Response) => {
     const totalFound = data.meta?.found || 120000;
     const dailyAverage = Math.floor(totalFound / 365) || 500;
     
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const today = new Date().getDay();
     const signalVolume = [];
     for (let i = 6; i >= 0; i--) {
-      const d = (today - i + 7) % 7;
+      const d = new Date(now - i * 24 * 60 * 60 * 1000);
+      const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       signalVolume.push({
-        day: days[d],
+        day: formattedDate,
         signals: Math.floor(dailyAverage * (0.8 + Math.random() * 0.4))
       });
     }
@@ -45,14 +45,16 @@ export const handleStatsBriefing = async (_req: Request, res: Response) => {
     signalVolume[6].signals = Math.floor(dailyAverage * (1.1 + Math.random() * 0.3)) || 1200;
 
     // Source distribution based on some top sources
-    const totalSources = signalVolume[6].signals * 7;
-    const sources = [
-      { name: "TechCrunch", count: Math.floor(totalSources * 0.15) },
-      { name: "ArXiv", count: Math.floor(totalSources * 0.25) },
-      { name: "Wired", count: Math.floor(totalSources * 0.10) },
-      { name: "The Verge", count: Math.floor(totalSources * 0.12) },
-      { name: "GitHub", count: Math.floor(totalSources * 0.38) },
-    ];
+    const totalSources = signalVolume.reduce((acc, curr) => acc + curr.signals, 0);
+    
+    // Pick top 5 active sources from config to show in the pie chart
+    const activeSources = SOURCES.slice(0, 5);
+    const weights = [0.38, 0.25, 0.15, 0.12, 0.10]; // Proportions
+    
+    const sources = activeSources.map((s, index) => ({
+      name: s.name,
+      count: Math.floor(totalSources * weights[index % weights.length])
+    }));
     
     // avgConfidence based on api returned relevance score mapped to 85-98
     let avgScore = 15;
@@ -96,13 +98,13 @@ export const handleStatsBriefing = async (_req: Request, res: Response) => {
         { name: "GitHub", count: 1200 }
       ],
       signalVolume: [
-        { day: "Mon", signals: 1200 },
-        { day: "Tue", signals: 1350 },
-        { day: "Wed", signals: 1100 },
-        { day: "Thu", signals: 1420 },
-        { day: "Fri", signals: 1600 },
-        { day: "Sat", signals: 850 },
-        { day: "Sun", signals: 920 }
+        { day: "Jun 18", signals: 1200 },
+        { day: "Jun 19", signals: 1350 },
+        { day: "Jun 20", signals: 1100 },
+        { day: "Jun 21", signals: 1420 },
+        { day: "Jun 22", signals: 1600 },
+        { day: "Jun 23", signals: 850 },
+        { day: "Jun 24", signals: 920 }
       ],
       topicSignals: [
         { topic: "AI Research", confidence: 92 },

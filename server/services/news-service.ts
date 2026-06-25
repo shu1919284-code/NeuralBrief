@@ -59,13 +59,23 @@ function toIso(raw: unknown): string {
 function extractSnippet(raw: unknown): string {
   if (!raw) return '';
 
-  let text: string;
+  let text: string = '';
 
-  if (typeof raw === 'object' && raw !== null && '__cdata' in raw) {
-    text = String((raw as Record<string, unknown>)['__cdata'] ?? '');
+  if (typeof raw === 'object' && raw !== null) {
+    const rawObj = raw as Record<string, unknown>;
+    if ('__cdata' in rawObj) {
+      text = String(rawObj['__cdata'] ?? '');
+    } else if ('#text' in rawObj) {
+      text = String(rawObj['#text'] ?? '');
+    } else {
+      // Avoid returning [object Object]
+      text = '';
+    }
   } else {
     text = String(raw);
   }
+
+  if (!text) return '';
 
   // Strip HTML tags for clean plain-text snippets
   let stripped = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
@@ -81,8 +91,11 @@ function extractChangelogEntries(entry: Record<string, unknown>): string[] {
 
   const extractHtml = (val: unknown): string => {
     if (!val) return '';
-    if (typeof val === 'object' && val !== null && '__cdata' in val) {
-      return String((val as Record<string, unknown>)['__cdata'] ?? '');
+    if (typeof val === 'object' && val !== null) {
+      const vObj = val as Record<string, unknown>;
+      if ('__cdata' in vObj) return String(vObj['__cdata'] ?? '');
+      if ('#text' in vObj) return String(vObj['#text'] ?? '');
+      return '';
     }
     return String(val);
   };

@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Moon, Sun, Globe, Search, X, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { Moon, Sun, Globe, X, LogIn, LogOut, User as UserIcon, Menu } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { ProfileModal } from './ProfileModal';
+import { Sidebar } from './Sidebar';
 
 // Sections tracked for active-link scroll-spy
 const NAV_SECTIONS = [
   { id: 'topics', href: '#topics' },
-  { id: 'process', href: '#process' },
+  { id: 'engine', href: '#engine' },
   { id: 'preview', href: '#preview' },
 ];
 
@@ -18,11 +19,10 @@ export function Navbar() {
   const { user, signInWithGoogle, signOut, authError, clearAuthError } = useAuth();
   const { mode, setMode, theme, setTheme } = useTheme();
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState<string>('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // ── Refs for sliding underline ─────────────────────────────────────────────
   const linksGroupRef = useRef<HTMLLIElement>(null);
@@ -37,12 +37,15 @@ export function Navbar() {
     }
   }, [authError]);
 
-  // ── Focus search input when overlay opens ─────────────────────────────────
+  // ── Dynamic Navbar Background ───────────────────────────────────────────────
   useEffect(() => {
-    if (showSearch && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [showSearch]);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial scroll position
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // ── Profile modal event bridge ────────────────────────────────────────────
   useEffect(() => {
@@ -114,86 +117,9 @@ export function Navbar() {
     { code: 'nl', label: 'Nederlands' },
   ] as const;
 
-  // ── Search: wire to section navigation + domain filtering ─────────────────
-  const performSearch = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) return;
-
-    const sectionMap: Record<string, string> = {
-      domains: 'topics',
-      topics: 'topics',
-      focus: 'topics',
-      pipeline: 'process',
-      engine: 'process',
-      process: 'process',
-      preview: 'preview',
-      digest: 'preview',
-      briefing: 'preview',
-      faq: 'faq',
-      subscribe: 'cta',
-      cta: 'cta',
-    };
-
-    const matchedSectionKey = Object.keys(sectionMap).find(k => query.includes(k));
-    if (matchedSectionKey) {
-      const sectionId = sectionMap[matchedSectionKey];
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        const heading = el.querySelector('h2');
-        if (heading) {
-          heading.classList.add('search-pulse');
-          setTimeout(() => heading.classList.remove('search-pulse'), 900);
-        }
-      }
-      setShowSearch(false);
-      setSearchQuery('');
-      return;
-    }
-
-    const domainKeywords: Record<string, string> = {
-      'data science': 'data-science',
-      'data': 'data-science',
-      'machine learning': 'machine-learning',
-      'ml': 'machine-learning',
-      'ai research': 'ai-research',
-      'research': 'ai-research',
-      'agentic': 'agentic-frameworks',
-      'agents': 'agentic-frameworks',
-    };
-
-    const matchedDomain = Object.keys(domainKeywords).find(k => query.includes(k));
-    if (matchedDomain) {
-      const topicsEl = document.getElementById('topics');
-      if (topicsEl) topicsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setShowSearch(false);
-      setSearchQuery('');
-      return;
-    }
-
-    const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, p'));
-    const match = elements.find(el => el.textContent?.toLowerCase().includes(query));
-    if (match) {
-      match.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setShowSearch(false);
-    } else if (searchInputRef.current) {
-      searchInputRef.current.animate(
-        [
-          { transform: 'translateX(0)' },
-          { transform: 'translateX(-6px)' },
-          { transform: 'translateX(6px)' },
-          { transform: 'translateX(-6px)' },
-          { transform: 'translateX(0)' },
-        ],
-        { duration: 350 },
-      );
-    }
-  }, [searchQuery]);
-
   const navLinkItems = [
     { href: '#topics', label: t('nav_domains'), id: 'topics' },
-    { href: '#process', label: t('nav_engine'), id: 'process' },
+    { href: '#engine', label: t('nav_engine'), id: 'engine' },
     { href: '#preview', label: t('nav_digest'), id: 'preview' },
   ];
 
@@ -220,17 +146,28 @@ export function Navbar() {
         initial={{ y: '-100%' }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="fixed w-full top-0 z-50 px-6 md:px-16 py-6 flex justify-between items-center bg-surface/80 backdrop-blur-xl border-b border-border-subtle"
+        className={`fixed w-full top-0 z-50 px-6 md:px-16 py-6 flex justify-between items-center transition-all duration-300 ${
+          isScrolled ? 'bg-surface/80 backdrop-blur-xl border-b border-border-subtle' : 'bg-transparent border-b-transparent'
+        }`}
       >
         {/* ── Logo & Theme Selector ─────────────────────────── */}
-        <div className="flex flex-col items-start gap-1">
-          <a
-            href="/"
-            aria-label="NeuralBrief — Go to homepage"
-            className="font-heading text-2xl italic tracking-tighter text-text-main hover:opacity-70 transition-opacity active:scale-95 inline-block"
+        <div className="flex items-start gap-3">
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="text-text-muted hover:text-text-main transition-colors focus:outline-none cursor-pointer mt-1"
+            aria-label="Open Navigation Menu"
           >
-            NeuralBrief
-          </a>
+            <Menu size={20} />
+          </button>
+          
+          <div className="flex flex-col items-start gap-1">
+            <a
+              href="/"
+              aria-label="NeuralBrief — Go to homepage"
+              className="font-heading text-2xl italic tracking-tighter text-text-main hover:opacity-70 transition-opacity active:scale-95 inline-block"
+            >
+              NeuralBrief
+            </a>
 
           <div className="flex gap-1.5 items-center mt-0.5">
             {[
@@ -254,6 +191,7 @@ export function Navbar() {
               </button>
             ))}
           </div>
+        </div>
         </div>
 
         {/* ── Desktop nav ──────────────────────────────────────────────────── */}
@@ -320,17 +258,6 @@ export function Navbar() {
             )}
           </li>
 
-          {/* ── Search ───────────────────────────────────────────────────── */}
-          <li>
-            <button
-              onClick={() => setShowSearch(true)}
-              className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-main active:scale-90 transition-all focus:outline-none cursor-pointer"
-              aria-label="Search"
-            >
-              <Search size={16} />
-            </button>
-          </li>
-
           {/* ── User / Auth ───────────────────────────────────────────────── */}
           <li>
             {user ? (
@@ -386,52 +313,8 @@ export function Navbar() {
         </ul>
       </motion.nav>
 
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
-
-      {/* ── Search overlay ───────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {showSearch && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] bg-surface/95 backdrop-blur-lg flex items-center justify-center p-6"
-          >
-            <button
-              onClick={() => setShowSearch(false)}
-              className="absolute top-8 right-8 text-text-muted hover:text-text-main transition-colors cursor-pointer"
-            >
-              <X size={32} strokeWidth={1} />
-            </button>
-
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="w-full max-w-3xl"
-            >
-              <form onSubmit={performSearch} className="relative">
-                <Search
-                  className="absolute left-8 top-1/2 -translate-y-1/2 text-text-muted w-8 h-8"
-                  strokeWidth={1.5}
-                />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder={t('search_placeholder')}
-                  className="w-full bg-surface-dim border border-border-subtle rounded-full py-8 pl-24 pr-8 text-3xl font-heading italic focus:outline-none focus:border-text-main/30 text-text-main placeholder-text-muted/40 transition-colors"
-                />
-              </form>
-              <div className="mt-8 text-center text-text-muted text-[10px] uppercase tracking-widest font-bold">
-                {t('nav_search_try')}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

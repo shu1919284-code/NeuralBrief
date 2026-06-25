@@ -80,6 +80,7 @@ export function Engine(): React.JSX.Element {
   const [engineActive, setEngineActive] = useState(false);
   const [engineMode, setEngineMode] = useState<'MONITORING' | 'ANALYZING' | 'CONSENSUS' | 'DISPATCHING'>('MONITORING');
   const [consensusStatus, setConsensusStatus] = useState<'building' | 'reached' | null>(null);
+  const [selectedPhase, setSelectedPhase] = useState<string | null>(null);
 
   useEffect(() => {
     if (!engineActive) return;
@@ -100,16 +101,16 @@ export function Engine(): React.JSX.Element {
     }
   }, [engineActive, modeText]);
 
-  const nodesRefs = {
+  const nodesRefs = React.useMemo(() => ({
     ingestion: ingestionRef,
     logicGate: logicGateRef,
     llama: llamaRef,
     mistral: mistralRef,
     groq: groqRef,
     dispatch: dispatchRef,
-  };
+  }), []);
 
-  const pathsRefs = {
+  const pathsRefs = React.useMemo(() => ({
     ingestionToLogic: connIngestionLogicRef,
     logicToLlama: connLogicLlamaRef,
     logicToMistral: connLogicMistralRef,
@@ -117,7 +118,7 @@ export function Engine(): React.JSX.Element {
     llamaToDispatch: connLlamaDispatchRef,
     mistralToDispatch: connMistralDispatchRef,
     groqToDispatch: connGroqDispatchRef,
-  };
+  }), []);
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -370,7 +371,9 @@ export function Engine(): React.JSX.Element {
   }, [runEntrance]);
 
   return (
-    <section ref={sectionRef} className="py-32 px-6 md:px-16 max-w-7xl mx-auto" id="engine">
+    <>
+      <PhaseDetailModal selectedPhase={selectedPhase} onClose={() => setSelectedPhase(null)} />
+      <section ref={sectionRef} className="py-32 px-6 md:px-16 max-w-7xl mx-auto" id="engine">
 
       <motion.div
         initial={{ opacity: 0, y: 60 }}
@@ -581,10 +584,10 @@ export function Engine(): React.JSX.Element {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mt-12">
-        <PhaseCard phase="1" title={t('engine_card1_title')} desc={t('engine_card1_desc')} />
-        <PhaseCard phase="2" title={t('engine_card2_title')} desc={t('engine_card2_desc')} delay={0.1} />
-        <PhaseCard phase="3" title={t('engine_card3_title')} desc={t('engine_card3_desc')} delay={0.2} />
-        <PhaseCard phase="4" title={t('engine_card4_title')} desc={t('engine_card4_desc')} delay={0.3} />
+        <PhaseCard phase="1" title={t('engine_card1_title')} desc={t('engine_card1_desc')} onClick={() => setSelectedPhase("1")} />
+        <PhaseCard phase="2" title={t('engine_card2_title')} desc={t('engine_card2_desc')} delay={0.1} onClick={() => setSelectedPhase("2")} />
+        <PhaseCard phase="3" title={t('engine_card3_title')} desc={t('engine_card3_desc')} delay={0.2} onClick={() => setSelectedPhase("3")} />
+        <PhaseCard phase="4" title={t('engine_card4_title')} desc={t('engine_card4_desc')} delay={0.3} onClick={() => setSelectedPhase("4")} />
       </div>
 
       <style>{`
@@ -633,6 +636,87 @@ export function Engine(): React.JSX.Element {
         }
       `}</style>
     </section>
+    </>
+  );
+}
+
+function PhaseDetailModal({ selectedPhase, onClose }: { selectedPhase: string | null, onClose: () => void }) {
+  if (!selectedPhase) return null;
+
+  let title = '';
+  let imgPath = '';
+  let deepDive = '';
+  let techStack = '';
+
+  if (selectedPhase === '1') {
+    title = 'Phase 01: Ingestion Pipeline';
+    imgPath = '/images/engine_phase_1_ingestion_1782329229325.png';
+    deepDive = 'The Ingestion Pipeline operates a distributed network of highly optimized scrapers and API listeners. It continuously monitors target domains such as ArXiv, GitHub repositories, HackerNews, and top-tier AI engineering blogs. By running parallel asynchronous tasks, it extracts raw text and normalizes chaotic data formats into a unified JSON structure, ready for the neural network.';
+    techStack = 'Node.js, Cheerio, RSS, WebSockets';
+  } else if (selectedPhase === '2') {
+    title = 'Phase 02: Evaluation & Vectorization';
+    imgPath = '/images/engine_phase_2_evaluation_1782329240719.png';
+    deepDive = 'In the Evaluation phase, raw signals are converted into high-dimensional embeddings using a lightweight embedding model. These vectors are mapped into a 3D coordinate space and compared using Cosine Similarity. This allows NeuralBrief to instantly cluster duplicate stories, eliminate noisy outliers, and score the relevance of the news against your personal technical profile.';
+    techStack = 'Pinecone, ChromaDB, Cosine Similarity';
+  } else if (selectedPhase === '3') {
+    title = 'Phase 03: Multi-Agent Synthesis';
+    imgPath = '/images/engine_phase_3_synthesis_1782329250128.png';
+    deepDive = 'Synthesis is the core of the engine. Here, we deploy a multi-agent consensus model. Llama 3 handles logical summarization, Mistral verifies technical accuracy, and Groq ensures hyper-fast inference. The agents debate the raw data and reach a consensus, ensuring the final output is factually sound, deeply technical, and free of AI hallucinations.';
+    techStack = 'Llama 3, Mistral, Groq LPU, LangChain';
+  } else if (selectedPhase === '4') {
+    title = 'Phase 04: Delivery & Dispatch';
+    imgPath = '/images/engine_phase_4_delivery_1782329262802.png';
+    deepDive = 'The final Delivery phase compiles the synthesized intelligence into a sleek, readable executive briefing. The payload is packaged, compressed, and fired via a low-latency SMTP relay directly to the user\'s inbox at the exact scheduled time. This ensures you receive the latest, deduplicated intelligence without ever opening a dashboard.';
+    techStack = 'SendGrid, SMTP Relay, React Email';
+  }
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 md:p-8"
+      >
+        <motion.div
+          initial={{ scale: 0.95, y: 20, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.95, y: 20, opacity: 0 }}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-surface border border-border-subtle shadow-2xl max-w-4xl w-full rounded-sm overflow-hidden flex flex-col md:flex-row relative"
+        >
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-accent hover:text-black transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          
+          <div className="md:w-1/2 h-64 md:h-auto relative bg-surface-dim">
+            <img src={imgPath} alt={title} className="w-full h-full object-cover opacity-80 mix-blend-screen" />
+            <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent md:bg-gradient-to-r md:from-transparent md:to-surface" />
+          </div>
+
+          <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+            <span className="text-[10px] text-accent font-bold uppercase tracking-widest mb-4">Neural Architecture</span>
+            <h3 className="text-3xl font-heading mb-6">{title}</h3>
+            <p className="text-text-muted text-sm leading-relaxed mb-8">{deepDive}</p>
+            
+            <div className="mt-auto">
+              <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold block mb-3">Core Stack</span>
+              <div className="flex flex-wrap gap-2">
+                {techStack.split(', ').map(tech => (
+                  <span key={tech} className="text-[10px] uppercase tracking-widest border border-accent/30 text-accent bg-accent/5 px-3 py-1 rounded-sm">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -898,9 +982,9 @@ const NeuralBackground = forwardRef<BackgroundHandle, { type: 'neural' | 'bluepr
 });
 
 function PhaseCard({
-  phase, title, desc, delay = 0,
+  phase, title, desc, delay = 0, onClick
 }: {
-  phase: string; title: string; desc: string; delay?: number;
+  phase: string; title: string; desc: string; delay?: number; onClick?: () => void;
 }): React.JSX.Element {
   const { t } = useLanguage();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -943,6 +1027,7 @@ function PhaseCard({
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onClick={onClick}
         className="phase-card group cursor-pointer relative bg-transparent hover:bg-surface-dim p-4 border border-transparent hover:border-border-subtle overflow-hidden [transform-style:preserve-3d] h-full"
         style={{ transition: 'transform 0.15s ease-out, background-color 0.2s ease, border-color 0.2s ease' }}
       >
@@ -1084,11 +1169,16 @@ function PacketGraphic({
   times: number[];
 }) {
   const gRef = useRef<SVGGElement>(null);
+  const onEndRef = useRef(onEnd);
+
+  useEffect(() => {
+    onEndRef.current = onEnd;
+  }, [onEnd]);
 
   useEffect(() => {
     if (!gRef.current) return;
     const dur = transition.duration;
-    const tl = gsap.timeline({ onComplete: onEnd });
+    const tl = gsap.timeline({ onComplete: () => onEndRef.current?.() });
     
     gsap.set(gRef.current, { offsetDistance: "0%", opacity: 0 });
     
@@ -1111,7 +1201,7 @@ function PacketGraphic({
     }, dur * 0.92);
 
     return () => { tl.kill(); };
-  }, [path, onEnd, transition.duration]);
+  }, [path, transition.duration]);
 
   return (
     <g

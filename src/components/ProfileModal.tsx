@@ -32,6 +32,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [activeTab, setActiveTab] = useState<'topics' | 'preferences' | 'bookmarks'>('topics');
+  const [onboardingData, setOnboardingData] = useState<{profession?: string, usageIntent?: string, referralSource?: string} | null>(null);
 
   useEffect(() => {
     if (isOpen && user) loadPreferences();
@@ -50,6 +51,11 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         setSelectedTopics(data.topics ?? []);
         setTelegramUsername(data.telegramUsername ?? '');
         setTopicsLastChanged(data.topicsLastChanged ?? null);
+        setOnboardingData({
+          profession: data.profession,
+          usageIntent: data.usageIntent,
+          referralSource: data.referralSource,
+        });
       }
     } catch (e) {
       console.error('Failed to load preferences:', e);
@@ -271,6 +277,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                         setFrequency={setFrequency}
                         telegramUsername={telegramUsername}
                         setTelegramUsername={setTelegramUsername}
+                        onboardingData={onboardingData}
                       />
                     </motion.div>
                   )}

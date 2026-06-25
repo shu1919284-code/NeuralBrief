@@ -24,6 +24,7 @@ import { OnboardingModal } from './components/OnboardingModal';
 import { db } from './lib/firebase';
 import { hashEmail } from './lib/hash';
 import { useAuth } from './contexts/AuthContext';
+import { CommandPalette } from './components/CommandPalette';
 
 const Engine = lazy(() =>
   import('./components/Engine')
@@ -220,6 +221,16 @@ function AppWithOnboarding() {
       .catch((err) => { setErrorDomains(err instanceof Error ? err.message : String(err)); setLoadingDomains(false); });
   }, []);
 
+  // ── Global event listener for opening specific domain briefings ───────────
+  useEffect(() => {
+    const handleOpenBriefing = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setSelectedBriefing(customEvent.detail);
+    };
+    window.addEventListener('openBriefing', handleOpenBriefing);
+    return () => window.removeEventListener('openBriefing', handleOpenBriefing);
+  }, []);
+
   return (
     <>
       {/* Onboarding modal — renders on top of everything, z-[200] */}
@@ -243,6 +254,7 @@ function AppWithOnboarding() {
           <ScrollProgress />
           <CustomCursor />
           <NeuralCanvas />
+          <CommandPalette />
           <Navbar />
           <main>
             <ReadingTime />

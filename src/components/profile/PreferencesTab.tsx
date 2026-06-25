@@ -8,7 +8,35 @@ interface PreferencesTabProps {
   setFrequency: (val: string) => void;
   telegramUsername: string;
   setTelegramUsername: (val: string) => void;
+  onboardingData?: {
+    profession?: string;
+    usageIntent?: string;
+    referralSource?: string;
+  } | null;
 }
+
+const ROLES: Record<string, { label: string, emoji: string }> = {
+  'developer':  { label: 'Developer',   emoji: '⌨️' },
+  'researcher': { label: 'Researcher',  emoji: '🔬' },
+  'student':    { label: 'Student',     emoji: '🎓' },
+  'founder':    { label: 'Founder',     emoji: '🚀' },
+  'other':      { label: 'Other',       emoji: '✦'  },
+};
+
+const INTENTS: Record<string, { label: string, emoji: string }> = {
+  'stay_updated':  { label: 'Stay updated on AI',      emoji: '📡' },
+  'deep_research': { label: 'Deep research',           emoji: '🧠' },
+  'work_projects': { label: 'Work projects',           emoji: '💼' },
+  'curiosity':     { label: 'General curiosity',       emoji: '✦'  },
+};
+
+const REFERRALS: Record<string, { label: string, emoji: string }> = {
+  'twitter':       { label: 'Twitter / X',             emoji: '𝕏'  },
+  'friend':        { label: 'A friend',                emoji: '👋' },
+  'google':        { label: 'Google Search',           emoji: '🔍' },
+  'product_hunt':  { label: 'Product Hunt',            emoji: '🐱' },
+  'other':         { label: 'Other',                   emoji: '✦'  },
+};
 
 const BORDER = 'rgba(240,234,214,0.08)';
 const BORDER_H = 'rgba(240,234,214,0.2)';
@@ -80,11 +108,42 @@ export function PreferencesTab({
   setFrequency,
   telegramUsername,
   setTelegramUsername,
+  onboardingData,
 }: PreferencesTabProps) {
   const { language, setLanguage, t } = useLanguage();
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+      {/* ── Account Details ── */}
+      {onboardingData && (onboardingData.profession || onboardingData.usageIntent) && (
+        <div>
+          <SectionLabel>{t('profile.account_details') || 'Account Details'}</SectionLabel>
+          <FieldGroup>
+            {onboardingData.profession && (
+              <FieldRow icon={<span style={{ fontSize: 12 }}>{ROLES[onboardingData.profession]?.emoji || '👤'}</span>} title={t('profile.role') || 'Role'}>
+                <div style={{ fontSize: 12, color: TEXT }}>
+                  {ROLES[onboardingData.profession]?.label || onboardingData.profession}
+                </div>
+              </FieldRow>
+            )}
+            {onboardingData.usageIntent && (
+              <FieldRow icon={<span style={{ fontSize: 12 }}>{INTENTS[onboardingData.usageIntent]?.emoji || '🎯'}</span>} title={t('profile.primary_intent') || 'Primary Intent'}>
+                <div style={{ fontSize: 12, color: TEXT }}>
+                  {INTENTS[onboardingData.usageIntent]?.label || onboardingData.usageIntent}
+                </div>
+              </FieldRow>
+            )}
+            {onboardingData.referralSource && (
+              <FieldRow icon={<span style={{ fontSize: 12 }}>{REFERRALS[onboardingData.referralSource]?.emoji || '🌐'}</span>} title={t('profile.discovered_via') || 'Discovered Via'} isLast>
+                <div style={{ fontSize: 12, color: TEXT }}>
+                  {REFERRALS[onboardingData.referralSource]?.label || onboardingData.referralSource}
+                </div>
+              </FieldRow>
+            )}
+          </FieldGroup>
+        </div>
+      )}
 
       {/* ── Digest delivery ── */}
       <div>

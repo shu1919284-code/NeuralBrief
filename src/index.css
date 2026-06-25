@@ -121,8 +121,8 @@
   --motion-speed-multiplier: 1.0;
 
   /* Light Mode Colors & Tints */
-  --curr-surface: #F8FAFC; /* Cool blue-tinted surface */
-  --curr-surface-dim: #E2E8F0;
+  --curr-surface: #F5F7FA; /* Subtle cool blue tint */
+  --curr-surface-dim: #E8EEF5;
   --color-accent: #4f46e5;
   --color-accent-soft: rgba(79, 70, 229, 0.1);
   --color-theme-glow: rgba(79, 70, 229, 0.15);
@@ -136,8 +136,8 @@
 }
 .dark[data-theme="indigo-intelligence"] {
   /* Dark Mode Colors & Tints */
-  --curr-surface: #020617; /* Very deep indigo */
-  --curr-surface-dim: #0f172a;
+  --curr-surface: #0A0B12; /* Deep nearly-black indigo */
+  --curr-surface-dim: #10121F;
   --color-accent: #6366f1;
   --color-accent-soft: rgba(99, 102, 241, 0.15);
   --color-theme-glow: rgba(99, 102, 241, 0.25);
@@ -160,8 +160,8 @@
   --motion-speed-multiplier: 0.95;
 
   /* Light Mode Colors & Tints */
-  --curr-surface: #F0FDF4; /* Soft green-tinted surface */
-  --curr-surface-dim: #DCFCE7;
+  --curr-surface: #F5FCF7; /* Subtle green tint */
+  --curr-surface-dim: #E8F5EB;
   --color-accent: #059669;
   --color-accent-soft: rgba(5, 150, 105, 0.1);
   --color-theme-glow: rgba(5, 150, 105, 0.15);
@@ -175,8 +175,8 @@
 }
 .dark[data-theme="emerald-analyst"] {
   /* Dark Mode Colors & Tints */
-  --curr-surface: #022c22; /* Deep forest green */
-  --curr-surface-dim: #064e3b;
+  --curr-surface: #0A120D; /* Deep nearly-black forest green */
+  --curr-surface-dim: #0E1F14;
   --color-accent: #10b981;
   --color-accent-soft: rgba(16, 185, 129, 0.15);
   --color-theme-glow: rgba(16, 185, 129, 0.25);
@@ -199,8 +199,8 @@
   --motion-speed-multiplier: 1.3;
 
   /* Light Mode Colors & Tints */
-  --curr-surface: #FEF2F2; /* Soft red tint */
-  --curr-surface-dim: #FEE2E2;
+  --curr-surface: #FCF5F5; /* Subtle red tint */
+  --curr-surface-dim: #F5E8E8;
   --color-accent: #dc2626;
   --color-accent-soft: rgba(220, 38, 38, 0.1);
   --color-theme-glow: rgba(220, 38, 38, 0.15);
@@ -214,8 +214,8 @@
 }
 .dark[data-theme="crimson-real-time"] {
   /* Dark Mode Colors & Tints */
-  --curr-surface: #450a0a; /* Very deep red */
-  --curr-surface-dim: #7f1d1d;
+  --curr-surface: #120A0A; /* Deep nearly-black red */
+  --curr-surface-dim: #1F1010;
   --color-accent: #ef4444;
   --color-accent-soft: rgba(239, 68, 68, 0.15);
   --color-theme-glow: rgba(239, 68, 68, 0.3);
@@ -238,8 +238,8 @@
   --motion-speed-multiplier: 0.9;
 
   /* Light Mode Colors & Tints */
-  --curr-surface: #FFFBEB; /* Soft amber/journal tint */
-  --curr-surface-dim: #FEF3C7;
+  --curr-surface: #FCF9F5; /* Subtle amber tint */
+  --curr-surface-dim: #F5EBE0;
   --color-accent: #d97706;
   --color-accent-soft: rgba(217, 119, 6, 0.1);
   --color-theme-glow: rgba(217, 119, 6, 0.15);
@@ -253,8 +253,8 @@
 }
 .dark[data-theme="amber-insight"] {
   /* Dark Mode Colors & Tints */
-  --curr-surface: #451a03; /* Deep amber brown */
-  --curr-surface-dim: #78350f;
+  --curr-surface: #14100A; /* Deep nearly-black amber */
+  --curr-surface-dim: #1F180E;
   --color-accent: #f59e0b;
   --color-accent-soft: rgba(245, 158, 11, 0.15);
   --color-theme-glow: rgba(245, 158, 11, 0.25);

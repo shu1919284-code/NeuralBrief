@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 // ─── Node data ──────────────────────────────────────────────────────────────
 // SVG-space coordinates, matching viewBox="0 0 900 200".
@@ -13,11 +13,41 @@ const NODE_POSITIONS = [
 ];
 
 const NODE_INFOS = [
-  { name: 'RSS Feed', desc: 'Monitors 100+ curated blogs, engineering channels, and news feeds in real-time.' },
-  { name: 'Scraper', desc: 'Extracts full article content, strips media noise, and parses structural metadata.' },
-  { name: 'Gemini AI', desc: 'Synthesizes raw inputs into deep technical, structured academic digests.' },
-  { name: 'Gmail', desc: 'Formats the finished synopsis and coordinates daily inbox dispatch via Gmail APIs.' },
-  { name: 'You', desc: 'A clean, structured intelligence briefing waiting in your inbox by 7:00 AM daily.' },
+  { 
+    name: 'RSS Feed', 
+    desc: 'Monitors 100+ curated blogs, engineering channels, and news feeds in real-time.',
+    deepDive: 'Our ingestion engine taps directly into RSS/Atom feeds, WebSockets, and Twitter/X APIs. It actively polls 100+ highly curated engineering blogs (like Google AI, OpenAI, Meta AI) and academic preprint servers like ArXiv, ensuring zero latency from publication to discovery.',
+    techStack: 'Node.js, WebSocket, RSS Parser',
+    imgPath: '/images/pipeline_rss_1782337058030.png'
+  },
+  { 
+    name: 'Scraper', 
+    desc: 'Extracts full article content, strips media noise, and parses structural metadata.',
+    deepDive: 'Once a signal is detected, the Scraper agent navigates to the source. It bypasses paywalls, parses raw HTML, and uses intelligent heuristics to strip out ads, banners, and irrelevant DOM noise. It extracts only the pristine textual content and code blocks.',
+    techStack: 'Puppeteer, Cheerio, Readability.js',
+    imgPath: '/images/pipeline_scraper_1782337070418.png'
+  },
+  { 
+    name: 'Neural Synthesis', 
+    desc: 'Synthesizes raw inputs into deep technical, structured academic digests.',
+    deepDive: 'The core brain of the pipeline. We feed the raw text directly into a distributed consensus network of LLMs. Using heavily engineered system prompts, the models evaluate the content, filter out hallucinations, and synthesize a high-density, structured executive briefing containing only the actual signal.',
+    techStack: 'Llama 3, Mistral, Groq LPU, Prompt Engineering',
+    imgPath: '/images/pipeline_synthesis_1782337081718.png'
+  },
+  { 
+    name: 'Gmail', 
+    desc: 'Formats the finished synopsis and coordinates daily inbox dispatch via Gmail APIs.',
+    deepDive: 'The generated JSON intelligence is passed into a responsive email templating engine. The final payload is formatted with semantic HTML and inline CSS to look beautiful on any device, then dispatched via secure SMTP/Gmail API relays directly to the user\'s inbox.',
+    techStack: 'React Email, Gmail API, NodeMailer',
+    imgPath: '/images/pipeline_delivery_1782337094187.png'
+  },
+  { 
+    name: 'You', 
+    desc: 'A clean, structured intelligence briefing waiting in your inbox by 7:00 AM daily.',
+    deepDive: 'The final destination. You receive a distraction-free, deeply technical briefing tailored exactly to your preferences. No doom-scrolling required—just the pure, unadulterated intelligence you need to stay ahead of the curve.',
+    techStack: 'Human Brain, Coffee, Focus',
+    imgPath: '/images/pipeline_user_1782337106230.png'
+  },
 ];
 
 const VIEWBOX_WIDTH = 900;
@@ -69,6 +99,7 @@ export function Pipeline3D(): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoveredNode, setHoveredNode] = useState<number | null>(null);
+  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null);
 
   // ─── Tooltip overflow detection ─────────────────────────────────────────
   // Refs to each node's popover element so we can measure its actual
@@ -139,6 +170,10 @@ export function Pipeline3D(): React.JSX.Element {
 
   return (
     <section className="py-24 px-6 md:px-16 max-w-7xl mx-auto" id="pipeline-3d">
+      <PipelineDetailModal 
+        selectedNodeInfo={selectedNodeIndex !== null ? NODE_INFOS[selectedNodeIndex] : null} 
+        onClose={() => setSelectedNodeIndex(null)} 
+      />
       <div className="text-center mb-12">
         <span className="text-[10px] text-text-muted uppercase tracking-[0.2em] mb-4 block font-bold">
           Data Flow Visualizer
@@ -164,13 +199,17 @@ export function Pipeline3D(): React.JSX.Element {
           preserveAspectRatio="xMidYMid meet"
         >
           {/* Connecting line — Catmull-Rom-approximated cubic bezier through all nodes */}
-          <path
+          <motion.path
             d={pathD}
             fill="none"
             stroke="var(--color-accent)"
             strokeWidth={1.5}
             className="opacity-30"
             style={{ filter: 'drop-shadow(0 0 6px var(--color-theme-glow))' }}
+            initial={{ pathLength: 0 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 2.5, ease: 'easeInOut' }}
           />
 
           {/* Traveling pulse dots, animated along the same path via offset-path/offset-distance */}
@@ -197,6 +236,23 @@ export function Pipeline3D(): React.JSX.Element {
           {/* Node markers */}
           {NODE_POSITIONS.map((pos, idx) => (
             <g key={idx}>
+              {/* Radiating Ripple */}
+              <motion.circle
+                cx={pos.x}
+                cy={pos.y}
+                r={15}
+                fill="none"
+                stroke="var(--color-accent)"
+                strokeWidth={1}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 2.5, opacity: [0, 0.5, 0] }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeOut",
+                  delay: idx * 0.4
+                }}
+              />
               <circle
                 cx={pos.x}
                 cy={pos.y}
@@ -235,7 +291,7 @@ export function Pipeline3D(): React.JSX.Element {
                 className="relative flex flex-col items-center group cursor-pointer"
                 onMouseEnter={() => setHoveredNode(idx)}
                 onMouseLeave={() => setHoveredNode(null)}
-                onClick={() => setHoveredNode(hoveredNode === idx ? null : idx)}
+                onClick={() => setSelectedNodeIndex(idx)}
               >
                 {/* Visual node core */}
                 <div
@@ -300,6 +356,59 @@ export function Pipeline3D(): React.JSX.Element {
         })}
       </div>
     </section>
+  );
+}
+
+function PipelineDetailModal({ selectedNodeInfo, onClose }: { selectedNodeInfo: any, onClose: () => void }) {
+  if (!selectedNodeInfo) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 md:p-8"
+      >
+        <motion.div
+          initial={{ scale: 0.95, y: 20, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.95, y: 20, opacity: 0 }}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-surface border border-border-subtle shadow-2xl max-w-4xl w-full rounded-sm overflow-hidden flex flex-col md:flex-row relative"
+        >
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-accent hover:text-black transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          
+          <div className="md:w-1/2 h-64 md:h-auto relative bg-surface-dim">
+            <img src={selectedNodeInfo.imgPath} alt={selectedNodeInfo.name} className="w-full h-full object-cover opacity-80 mix-blend-screen" />
+            <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent md:bg-gradient-to-r md:from-transparent md:to-surface" />
+          </div>
+
+          <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+            <span className="text-[10px] text-accent font-bold uppercase tracking-widest mb-4">Pipeline Deep Dive</span>
+            <h3 className="text-3xl font-heading mb-6">{selectedNodeInfo.name}</h3>
+            <p className="text-text-muted text-sm leading-relaxed mb-8">{selectedNodeInfo.deepDive}</p>
+            
+            <div className="mt-auto">
+              <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold block mb-3">Core Stack</span>
+              <div className="flex flex-wrap gap-2">
+                {selectedNodeInfo.techStack.split(', ').map((tech: string) => (
+                  <span key={tech} className="text-[10px] uppercase tracking-widest border border-accent/30 text-accent bg-accent/5 px-3 py-1 rounded-sm">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
